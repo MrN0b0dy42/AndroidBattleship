@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">Battleship</string>
+
+    <!-- ConnectionModeActivity -->
+    <string name="activity_connection_mode_label">Connection mode</string>
+    <string name="button_bluetooth_text" translatable="false">Bluetooth</string>
+    <string name="button_wifi_text" translatable="false">Wi-Fi</string>
+
+    <!-- DifficultyModeActivity -->
+    <string name="activity_difficulty_mode_label">Difficulty mode</string>
+    <string name="button_easy_text">Easy</string>
+    <string name="button_hard_text">Hard</string>
+
+    <!-- GameActivity -->
+    <string name="textview_player_grid_text">Your grid</string>
+    <string name="textview_enemy_grid_text">Enemy\'s grid</string>
+    <string name="textview_player_turn_text">Your turn</string>
+    <string name="textview_enemy_turn_text">Enemy\'s turn</string>
+    <string name="popup_title_victory">Well played!!</string>
+    <string name="popup_title_defeat">Game Over</string>
+    <string name="popup_message_victory">You win.</string>
+    <string name="popup_message_defeat">You loose.</string>
+    <string name="popup_button_text">Back to start menu</string>
+    <string name="popup_title_game_saved">Save</string>
+    <string name="popup_message_game_saved">Game successfully saved.</string>
+    <string name="button_save_text">Save</string>
+    <string name="toast_save_text">Save unavailable during enemy\'s turn.</string>
+
+    <!-- SettingsActivity -->
+    <string name="activity_settings_label">Settings</string>
+    <string name="checkbox_music_text">Turn the music on</string>
+    <string name="checkbox_ambiance_text">Turn the ambiance on</string>
+
+    <!-- ShipsArrangementActivity -->
+    <string name="activity_shis_arrangement_label">Ships arrangement</string>
+    <string name="button_random_generation_text">Random generation</string>
+    <string name="button_play_text">Play</string>
+    <string name="toast_drag_and_drop_text">Drag and drop not implemented.</string>
+
+    <!-- SingleplayerMenuActivity -->
+    <string name="activity_singleplayer_menu_label">Menu player versus computer</string>
+    <string name="button_new_game_text">New game</string>
+    <string name="button_load_game_text">Load previous game</string>
+    <string name="toast_no_saved_game_text">No previous saved game.</string>
+
+    <!-- StartActivity -->
+    <string name="button_player_vs_computer_text">Player versus computer</string>
+    <string name="button_player_vs_player_text">Player versus player</string>
+    <string name="button_settings_name">Settings</string>
+</resources>

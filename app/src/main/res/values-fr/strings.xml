@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bataille navale</string>
+    <string name="button_player_vs_player_text">Joueur contre joueur</string>
+    <string name="button_settings_name">Options</string>
+    <string name="button_player_vs_computer_text">Joueur contre ordinateur</string>
+    <string name="activity_settings_label">Options</string>
+    <string name="checkbox_music_text">Activer la musique</string>
+    <string name="activity_connection_mode_label">Mode de connexion</string>
+    <string name="activity_singleplayer_menu_label">Menu joueur contre ordinateur</string>
+    <string name="button_load_game_text">Charger la partie précédente</string>
+    <string name="button_new_game_text">Nouvelle partie</string>
+    <string name="activity_shis_arrangement_label">Placement des navires</string>
+    <string name="activity_difficulty_mode_label">Mode de difficulté</string>
+    <string name="button_easy_text">Facile</string>
+    <string name="button_hard_text">Difficile</string>
+    <string name="button_random_generation_text">Génération aléatoire</string>
+    <string name="button_play_text">Jouer</string>
+    <string name="toast_drag_and_drop_text">Glisser-déposer non implémenté.</string>
+    <string name="textview_enemy_grid_text">Grille de l\'adversaire</string>
+    <string name="textview_player_grid_text">Votre grille</string>
+    <string name="textview_player_turn_text">Votre tour</string>
+    <string name="textview_enemy_turn_text">Tour de l\'adversaire</string>
+    <string name="popup_button_text">Revenir au menu d\'accueil</string>
+    <string name="popup_message_defeat">Vous avez perdu.</string>
+    <string name="popup_message_victory">Vous avez gagné.</string>
+    <string name="popup_title_defeat">Partie terminée</string>
+    <string name="popup_title_victory">Bien joué !</string>
+    <string name="button_save_text">Sauvegarder</string>
+    <string name="popup_message_game_saved">Partie sauvegardée avec succès.</string>
+    <string name="popup_title_game_saved">Sauvegarde</string>
+    <string name="toast_save_text">Sauvegarde indisponible durant le tour adverse.</string>
+    <string name="checkbox_ambiance_text">Activer l\'ambiance</string>
+    <string name="toast_no_saved_game_text">Pas de partie précédente sauvegardée.</string>
+</resources>

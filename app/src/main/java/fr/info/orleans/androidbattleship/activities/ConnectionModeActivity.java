@@ -1,5 +1,6 @@
 package fr.info.orleans.androidbattleship.activities;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -24,12 +25,14 @@ public class ConnectionModeActivity extends AppCompatActivity implements View.On
 
     @Override
     public void onClick(View v) {
+        Intent intent = null;
         switch (v.getId()) {
             case R.id.button_bluetooth:
                 Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.button_wifi:
-                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                //intent = new Intent(this,ConnectionActivity.class);
                 break;
         }
     }

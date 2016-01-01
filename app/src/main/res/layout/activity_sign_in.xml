@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="@color/paleBlue"
+    tools:context="fr.info.orleans.androidbattleship.activities.SignInActivity">
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/editText_lastname"
+            android:maxLength="32"
+            android:hint="Lastname"
+            android:textAlignment="center"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/editText_firstname"
+            android:hint="Firstname"
+            android:textAlignment="center"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/editText_login"
+            android:hint="Login"
+            android:textAlignment="center"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/editText_password"
+            android:inputType="textPassword"
+            android:hint="Password"
+            android:textAlignment="center"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/editText_password_confirmation"
+            android:inputType="textPassword"
+            android:hint="Password confirmation"
+            android:textAlignment="center"/>
+
+        <Button style="@style/ButtonTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/button_sign_in"
+            android:text="Sign in"/>
+
+    </TableLayout>
+
+
+</LinearLayout>

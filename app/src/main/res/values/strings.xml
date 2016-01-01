@@ -47,4 +47,6 @@
     <string name="button_player_vs_computer_text">Player versus computer</string>
     <string name="button_player_vs_player_text">Player versus player</string>
     <string name="button_settings_name">Settings</string>
+    <string name="title_activity_account">AccountActivity</string>
+    <string name="title_activity_sign_in">SignInActivity</string>
 </resources>

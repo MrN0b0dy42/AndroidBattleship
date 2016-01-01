@@ -42,7 +42,8 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
                 intent = new Intent(this, SingleplayerMenuActivity.class);
                 break;
             case R.id.button_player_vs_player:
-                intent = new Intent(this, ConnectionModeActivity.class);
+                //intent = new Intent(this, ConnectionModeActivity.class);
+                intent = new Intent(this, AccountActivity.class);
                 break;
             case R.id.button_settings:
                 intent = new Intent(this, SettingsActivity.class);

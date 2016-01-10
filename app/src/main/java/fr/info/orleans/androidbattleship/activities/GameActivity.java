@@ -56,8 +56,8 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
 
     private ArrayList<Coordinate>  grid2,grid3,grid4,grid5, hunt;
     private ArrayList<Integer> remainingBoat;
-    private int state;
-    private boolean huntVertical, huntHorizontal;
+    private int state, changeState;
+    private boolean initOk;
 
 
     @Override
@@ -95,6 +95,7 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         playSound(SOUND_INDEX_START);
         playerTurn = true;
         gameOver = false;
+        initOk=false;
         new Thread(this).start();
     }
 
@@ -398,41 +399,77 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
             });
         }
         else if (difficulty.equals("hard")){
-            if(this.grid2.size()==0) {
+            if(!initOk) {
                 initIAHard();
             }
-            ArrayList<Coordinate> gridCurrent=new ArrayList();
+            ArrayList<Coordinate> gridCurrent;
+            changeStatus();
             gridCurrent=selectGrid(this.state);
-            if(this.hunt.size()==0) {
-                Coordinate currentCoord = randomCase(gridCurrent);
-                int x = currentCoord.getX();
-                int y = currentCoord.getY();
-                /*
-                *
-                 */
-            }
+            int x;
+            int y;
             Coordinate currentCoord=new Coordinate();
+            do {
             switch (this.hunt.size()) {
                 case 0:
                     currentCoord = randomCase(gridCurrent);
-                    int x = currentCoord.getX();
-                    int y = currentCoord.getY();
-
                     break;
                 case 1:
                     currentCoord= selectCase(this.hunt.get(0));
                     break;
-                case 2:
-                    currentCoord=selectCase(this.hunt.get(1));
+                case 2:case 3: case 4:
+                    currentCoord=selectSpecificCase();
+                    if(changeState!=0){
+                        changeState--;
+                    }
                     break;
-                case 3:
-
-
-                default:
-
             }
+            x = currentCoord.getX();
+            y = currentCoord.getY();
+            } while (!notYetShot(x, y));
             removeOne(currentCoord);
-            //hunting(currentCoord); seulement si touché
+
+            Grid.Cell cell = playerGrid.getCells()[x][y];
+            final int idRes;
+
+            if (cell == Grid.Cell.EMPTY) {
+                idRes = R.drawable.miss;
+                playerGrid.setCellAt(x, y, Grid.Cell.MISS);
+                if(this.hunt.size()>1){
+                    changeState=2;
+                }
+                playerTurn = true;
+            } else {
+                idRes = R.drawable.hit;
+                this.hunt.add(currentCoord);
+                playerGrid.setCellAt(x, y, Grid.Cell.HIT);
+                if (playerGrid.isShipDestroyed(x, y)){
+                    ArrayList<Integer> delete= minmax(hunt);
+                    removeMany(delete.get(0),delete.get(1),delete.get(2),delete.get(3));
+                    changeRemainingBoat(this.hunt);
+                    changeState=0;
+                    this.hunt=new ArrayList();
+                }
+            }
+            final int finalX = x;
+            final int finalY = y;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    imageViewsPlayer[finalX][finalY].setBackgroundResource(idRes);
+                    switch (idRes) {
+                        case R.drawable.miss:
+                            playSound(SOUND_INDEX_MISS);
+                            break;
+                        case R.drawable.hit:
+                            if (playerGrid.isShipDestroyed(finalX, finalY))
+                                playSound(SOUND_INDEX_DESTROY);
+                            else
+                                playSound(SOUND_INDEX_HIT);
+                            break;
+                    }
+                }
+            });
+
         }
 
     }
@@ -449,6 +486,10 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
     }
 
     private void initIAHard(){
+        grid2=new ArrayList<>();
+        grid3=new ArrayList<>();
+        grid4=new ArrayList<>();
+        grid5=new ArrayList<>();
 
         for(int i=0; i<Grid.SIZE;i++){
                 for(int j=0; j<Grid.SIZE; j++){
@@ -460,10 +501,11 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                         Coordinate c = new Coordinate(i,j);
                         grid3.add(c);
                     }
-                    if ((i+j)%4==1){
-                        Coordinate c = new Coordinate(i,j);
+                    if ((i+j)%4==1) {
+                        Coordinate c = new Coordinate(i, j);
                         grid4.add(c);
-                    }if ((i+j)%5==1){
+                    }
+                    if ((i+j)%5==1){
                         Coordinate c = new Coordinate(i,j);
                         grid5.add(c);
                     }
@@ -474,8 +516,8 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         this.state=2;
         this.remainingBoat=new ArrayList();
         initRemainingBoat();
-        this.huntHorizontal=false;
-        this.huntVertical=false;
+        this.changeState = 0;
+        initOk=true;
 
     }
 
@@ -511,6 +553,34 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         }
     }
 
+    private ArrayList<Integer> minmax (ArrayList<Coordinate> List){
+        int minx=10;
+        int maxx=-1;
+        int miny = 10;
+        int maxy=-1;
+        ArrayList<Integer> sol = new ArrayList();
+        for(int i=0; i<List.size();i++){
+            Coordinate c = List.get(i);
+            if (c.getX()<minx){
+                minx=c.getX();
+            }
+            if (c.getX()>maxx){
+                maxx=c.getX();
+            }
+            if (c.getY()<miny){
+                miny=c.getY();
+            }
+            if (c.getY()<maxy){
+                maxy=c.getY();
+            }
+        }
+        sol.add(minx);
+        sol.add(maxx);
+        sol.add(miny);
+        sol.add(maxy);
+        return sol;
+    }
+
     private void removeMany(int mini, int maxi, int minj, int maxj){
         if(mini==maxi){
             for(int i=mini-1 ;i<maxi+2;i++){
@@ -522,38 +592,25 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         }
     }
 
-    private void hunting(Coordinate c){
-        this.hunt.add(c);
-        if(hunt.size()==2){
-            boolean test;
-            test=compare(this.hunt.get(0).getX(), this.hunt.get(1).getX());
-            if (test){
-                this.huntHorizontal=true;
-            }
-            else this.huntVertical=true;
-        }
-    }
-
-    public boolean compare(int x1,int x2){
-        if(x1==x2){
-            return true;
-        }
-        else return false;
+    private int difference(int x1,int x2){
+         return x2-x1;
     }
 
     public void changeStatus(){
-        if(remainingBoat.get(2).equals(0)){
-            state = 5;
+        if(remainingBoat.get(3).equals(0)){
+            this.state = 5;
+        }
+        else if(remainingBoat.get(2).equals(0)){
+            this.state = 4;
         }
         else if(remainingBoat.get(1).equals(0)){
-            state = 4;
-        }
-        else if(remainingBoat.get(0).equals(0)){
-            state = 3;
+            this.state = 3;
+        }else{
+            this.state = 2;
         }
     }
 
-    public void changeRemainingBoat(ArrayList<Integer> array){
+    public void changeRemainingBoat(ArrayList<Coordinate> array){
         int x = array.size();
         this.remainingBoat.set(x-2,this.remainingBoat.get(x-2)-1);
         this.hunt=new ArrayList();
@@ -574,20 +631,19 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         }
     }
 
-    //une codition a raajouter si la case est selectionnable ou  non
     private Coordinate selectCase(Coordinate c) {
         Coordinate newCoord = new Coordinate();
         ArrayList<Integer> possibility = new ArrayList();
-        if (c.getY()+1<Grid.SIZE && !huntVertical) {
+        if (c.getY()+1<Grid.SIZE && notYetShot(c.getX(), c.getY()+1)) {
             possibility.add(0);
         }
-        if (c.getX()+1<Grid.SIZE&& !huntHorizontal) {
+        if (c.getX()+1<Grid.SIZE && notYetShot(c.getX()+1, c.getY())) {
             possibility.add(1);
         }
-        if (c.getY()-1>=0 && !huntVertical) {
+        if (c.getY()-1>=0 && notYetShot(c.getX(), c.getY()-1)) {
             possibility.add(2);
         }
-        if (c.getX()-1>=0 && !huntHorizontal) {
+        if (c.getX()-1>=0 && notYetShot(c.getX()-1, c.getY())) {
             possibility.add(3);
         }
         Random r = new Random();
@@ -609,4 +665,34 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         }
         return newCoord;
     }
+
+    private Coordinate selectSpecificCase(){
+        Coordinate c=new Coordinate();
+        if(changeState==0){
+            int x=difference(this.hunt.get(hunt.size() - 2).getX(), this.hunt.get(hunt.size() - 1).getX());
+            int y=difference(this.hunt.get(hunt.size()-2).getY(),this.hunt.get(hunt.size()-1).getY());
+            c= new Coordinate(this.hunt.get(hunt.size() - 1).getX()+x,this.hunt.get(hunt.size()-1).getY()+y);
+            if(!notYetShot(c.getX(), c.getY())){
+               changeState=2;
+            }
+        }
+        else if(changeState==1){
+            int x=difference(this.hunt.get(0).getX(), this.hunt.get(hunt.size()-1).getX());
+            int y=difference(this.hunt.get(0).getY(),this.hunt.get(hunt.size()-1).getY());
+            c= new Coordinate(this.hunt.get(hunt.size()-1).getX()-x,this.hunt.get(hunt.size()-1).getY()-y);
+            if(!notYetShot(c.getX(), c.getY())){
+                changeState=2;
+            }
+        }
+        else if(changeState==2){
+            int x=difference(this.hunt.get(0).getX(), this.hunt.get(1).getX());
+            int y=difference(this.hunt.get(0).getY(),this.hunt.get(1).getY());
+            c= new Coordinate(this.hunt.get(0).getX()-x,this.hunt.get(0).getY()-y);
+
+        }
+        return c;
+    }
+
+
+
 }

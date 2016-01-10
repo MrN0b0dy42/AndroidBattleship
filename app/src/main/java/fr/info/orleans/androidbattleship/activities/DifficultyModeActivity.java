@@ -33,8 +33,9 @@ public class DifficultyModeActivity extends AppCompatActivity implements View.On
                 break;
             case R.id.button_hard:
                 difficulty = "hard";
-                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
-                return;
+                //Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                //return;
+                break;
         }
         intent.putExtra("difficulty", difficulty);
         startActivity(intent);

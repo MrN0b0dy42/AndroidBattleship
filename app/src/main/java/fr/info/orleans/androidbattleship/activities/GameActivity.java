@@ -597,17 +597,14 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
     }
 
     public void changeStatus(){
-        if(remainingBoat.get(3).equals(0)){
-            this.state = 5;
+        boolean stop=false;
+        int i=0;
+        while(!stop){
+            if(remainingBoat.get(i).equals(0)){
+                i++;
+            }else stop=true;
         }
-        else if(remainingBoat.get(2).equals(0)){
-            this.state = 4;
-        }
-        else if(remainingBoat.get(1).equals(0)){
-            this.state = 3;
-        }else{
-            this.state = 2;
-        }
+        this.state=i+2;
     }
 
     public void changeRemainingBoat(ArrayList<Coordinate> array){
@@ -635,16 +632,24 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         Coordinate newCoord = new Coordinate();
         ArrayList<Integer> possibility = new ArrayList();
         if (c.getY()+1<Grid.SIZE && notYetShot(c.getX(), c.getY()+1)) {
-            possibility.add(0);
+            if(c.getY()<10){
+                possibility.add(0);
+            }
         }
         if (c.getX()+1<Grid.SIZE && notYetShot(c.getX()+1, c.getY())) {
-            possibility.add(1);
+            if(c.getX()<10) {
+                possibility.add(1);
+            }
         }
         if (c.getY()-1>=0 && notYetShot(c.getX(), c.getY()-1)) {
-            possibility.add(2);
+            if(c.getY()>=0) {
+                possibility.add(2);
+            }
         }
         if (c.getX()-1>=0 && notYetShot(c.getX()-1, c.getY())) {
-            possibility.add(3);
+            if(c.getX()>=0) {
+                possibility.add(3);
+            }
         }
         Random r = new Random();
         int i = (r.nextInt(possibility.size()));
@@ -673,12 +678,21 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
             int y=difference(this.hunt.get(hunt.size()-2).getY(),this.hunt.get(hunt.size()-1).getY());
             c= new Coordinate(this.hunt.get(hunt.size() - 1).getX()+x,this.hunt.get(hunt.size()-1).getY()+y);
             if(!notYetShot(c.getX(), c.getY())){
-               changeState=2;
+                changeState=2;
+                return selectSpecificCase();
+            }
+            else if(c.getX()<0 || c.getX()>9){
+                changeState=2;
+                return selectSpecificCase();
+            }
+            else if(c.getY()<0 || c.getY()>9){
+                changeState=2;
+                return selectSpecificCase();
             }
         }
         else if(changeState==1){
-            int x=difference(this.hunt.get(0).getX(), this.hunt.get(hunt.size()-1).getX());
-            int y=difference(this.hunt.get(0).getY(),this.hunt.get(hunt.size()-1).getY());
+            int x=difference(this.hunt.get(hunt.size()-1).getX(), this.hunt.get(0).getX());
+            int y = difference(this.hunt.get(hunt.size() - 1).getY(), this.hunt.get(0).getY());
             c= new Coordinate(this.hunt.get(hunt.size()-1).getX()-x,this.hunt.get(hunt.size()-1).getY()-y);
             if(!notYetShot(c.getX(), c.getY())){
                 changeState=2;

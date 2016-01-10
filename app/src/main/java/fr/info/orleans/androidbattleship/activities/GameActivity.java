@@ -5,11 +5,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.support.annotation.ArrayRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.CorrectionInfo;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import fr.info.orleans.androidbattleship.R;
+import fr.info.orleans.androidbattleship.model.Coordinate;
 import fr.info.orleans.androidbattleship.model.Grid;
 import fr.info.orleans.androidbattleship.InternalStorageManager;
 
@@ -50,6 +53,12 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
     private Grid playerGrid, enemyGrid;
     private ArrayList<MediaPlayer> mediaPlayers;
     private boolean playerTurn, gameOver, gameLoaded;
+
+    private ArrayList<Coordinate>  grid2,grid3,grid4,grid5, hunt;
+    private ArrayList<Integer> remainingBoat;
+    private int state;
+    private boolean huntVertical, huntHorizontal;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -388,6 +397,44 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                 }
             });
         }
+        else if (difficulty.equals("hard")){
+            if(this.grid2.size()==0) {
+                initIAHard();
+            }
+            ArrayList<Coordinate> gridCurrent=new ArrayList();
+            gridCurrent=selectGrid(this.state);
+            if(this.hunt.size()==0) {
+                Coordinate currentCoord = randomCase(gridCurrent);
+                int x = currentCoord.getX();
+                int y = currentCoord.getY();
+                /*
+                *
+                 */
+            }
+            Coordinate currentCoord=new Coordinate();
+            switch (this.hunt.size()) {
+                case 0:
+                    currentCoord = randomCase(gridCurrent);
+                    int x = currentCoord.getX();
+                    int y = currentCoord.getY();
+
+                    break;
+                case 1:
+                    currentCoord= selectCase(this.hunt.get(0));
+                    break;
+                case 2:
+                    currentCoord=selectCase(this.hunt.get(1));
+                    break;
+                case 3:
+
+
+                default:
+
+            }
+            removeOne(currentCoord);
+            //hunting(currentCoord); seulement si touché
+        }
+
     }
 
     private boolean notYetShot(int x, int y) {
@@ -401,4 +448,165 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         return new Random().nextInt(Grid.SIZE);
     }
 
+    private void initIAHard(){
+
+        for(int i=0; i<Grid.SIZE;i++){
+                for(int j=0; j<Grid.SIZE; j++){
+                    if ((i+j)%2==1){
+                        Coordinate c = new Coordinate(i,j);
+                        grid2.add(c);
+                    }
+                    if ((i+j)%3==1){
+                        Coordinate c = new Coordinate(i,j);
+                        grid3.add(c);
+                    }
+                    if ((i+j)%4==1){
+                        Coordinate c = new Coordinate(i,j);
+                        grid4.add(c);
+                    }if ((i+j)%5==1){
+                        Coordinate c = new Coordinate(i,j);
+                        grid5.add(c);
+                    }
+
+                }
+        }
+        this.hunt=new ArrayList();
+        this.state=2;
+        this.remainingBoat=new ArrayList();
+        initRemainingBoat();
+        this.huntHorizontal=false;
+        this.huntVertical=false;
+
+    }
+
+    private Coordinate randomCase(ArrayList<Coordinate> coord){
+        int size = coord.size();
+        Random r = new Random();
+        int i = (r.nextInt(size));
+        return coord.get(i);
+    }
+
+    private void initRemainingBoat(){
+        for(int i=0;i<4;i++){
+            if(i==3){
+                this.remainingBoat.add(1);
+            }
+            else this.remainingBoat.add(2);
+        }
+
+    }
+
+    private void removeOne(Coordinate c){
+        if(this.grid2.contains(c)){
+            grid2.remove(c);
+        }
+        if(this.grid3.contains(c)){
+            grid3.remove(c);
+        }
+        if(this.grid4.contains(c)){
+            grid4.remove(c);
+        }
+        if(this.grid5.contains(c)){
+            grid5.remove(c);
+        }
+    }
+
+    private void removeMany(int mini, int maxi, int minj, int maxj){
+        if(mini==maxi){
+            for(int i=mini-1 ;i<maxi+2;i++){
+                for(int j= minj-1; j<maxj+2; j++){
+                    Coordinate c = new Coordinate(i,j);
+                    removeOne(c);
+                }
+            }
+        }
+    }
+
+    private void hunting(Coordinate c){
+        this.hunt.add(c);
+        if(hunt.size()==2){
+            boolean test;
+            test=compare(this.hunt.get(0).getX(), this.hunt.get(1).getX());
+            if (test){
+                this.huntHorizontal=true;
+            }
+            else this.huntVertical=true;
+        }
+    }
+
+    public boolean compare(int x1,int x2){
+        if(x1==x2){
+            return true;
+        }
+        else return false;
+    }
+
+    public void changeStatus(){
+        if(remainingBoat.get(2).equals(0)){
+            state = 5;
+        }
+        else if(remainingBoat.get(1).equals(0)){
+            state = 4;
+        }
+        else if(remainingBoat.get(0).equals(0)){
+            state = 3;
+        }
+    }
+
+    public void changeRemainingBoat(ArrayList<Integer> array){
+        int x = array.size();
+        this.remainingBoat.set(x-2,this.remainingBoat.get(x-2)-1);
+        this.hunt=new ArrayList();
+    }
+
+    private ArrayList<Coordinate> selectGrid(int state){
+        switch (state) {
+            case 2:
+                return grid2;
+            case 3:
+                return grid3;
+            case 4:
+                return grid4;
+            case 5:
+                return grid5;
+            default:
+                return grid2;
+        }
+    }
+
+    //une codition a raajouter si la case est selectionnable ou  non
+    private Coordinate selectCase(Coordinate c) {
+        Coordinate newCoord = new Coordinate();
+        ArrayList<Integer> possibility = new ArrayList();
+        if (c.getY()+1<Grid.SIZE && !huntVertical) {
+            possibility.add(0);
+        }
+        if (c.getX()+1<Grid.SIZE&& !huntHorizontal) {
+            possibility.add(1);
+        }
+        if (c.getY()-1>=0 && !huntVertical) {
+            possibility.add(2);
+        }
+        if (c.getX()-1>=0 && !huntHorizontal) {
+            possibility.add(3);
+        }
+        Random r = new Random();
+        int i = (r.nextInt(possibility.size()));
+        int x = possibility.get(i);
+        switch(x) {
+            case 0:
+                newCoord = new Coordinate(c.getX(), c.getY()+1);
+                break;
+            case 1:
+                newCoord = new Coordinate(c.getX()+1, c.getY());
+                break;
+            case 2:
+                newCoord = new Coordinate(c.getX(), c.getY()-1);
+                break;
+            case 3:
+                newCoord = new Coordinate(c.getX()-1, c.getY());
+                break;
+        }
+        return newCoord;
+    }
 }

@@ -1,9 +1,11 @@
 package fr.info.orleans.androidbattleship.model;
 
+import java.io.Serializable;
+
 /**
  * Created by Ludo on 09/12/2015.
  */
-public class Player {
+public class Player{
     private int idPlayer;
     private String firstname;
     private String lastname;
@@ -12,19 +14,21 @@ public class Player {
 
     public Player(){};
 
-    public Player( int idPlayer, String firstname, String lastname, String login, String password) {
+    public Player(String firstname, String lastname, String login, String password) {
+        super();
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.login = login;
+        this.password = password;
+    }
+
+    public void setIdPlayer(int idPlayer){
         this.idPlayer = idPlayer;
-        this.login = login;
-        this.password = password;
-        this.login = login;
-        this.password = password;
     }
 
     public int getIdPlayer() {
         return idPlayer;
     }
-
-    public void setIdPlayer(int idPlayer) { this.idPlayer = idPlayer; }
 
     public String getFirstname() {
         return firstname;
@@ -57,4 +61,11 @@ public class Player {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    @Override
+
+    public String toString() {
+        return "Player [idPlayer=" + idPlayer + ", firstname=" + firstname + ", lastname=" + lastname + ", login=" + login + ", password=" + password + "]";
+    }
+
 }

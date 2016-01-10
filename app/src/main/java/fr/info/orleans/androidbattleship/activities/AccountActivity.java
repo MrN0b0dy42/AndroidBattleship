@@ -10,7 +10,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.List;
+
+import fr.info.orleans.androidbattleship.AndroidBattleship;
+import fr.info.orleans.androidbattleship.DatabaseManager;
 import fr.info.orleans.androidbattleship.R;
+import fr.info.orleans.androidbattleship.model.Player;
 import fr.info.orleans.androidbattleship.services.BackgroundAmbianceService;
 import fr.info.orleans.androidbattleship.services.BackgroundMusicService;
 
@@ -41,17 +46,30 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = null;
         switch (v.getId()) {
             case R.id.button_guest_mode:
-                Log.d("DEBUG","guest mode");
+                intent = new Intent(this,ConnectionModeActivity.class);
+                startActivity(intent);
                 break;
             case R.id.button_sign_up:
-                //ici requête de séléction sur les joueurs where login = editTextLogin && password = editTextPassword
-                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                List players = null;
+                DatabaseManager db = new DatabaseManager(this);
+                db.getReadableDatabase();
+                players = db.selectPlayerByQuery("SELECT * FROM Player WHERE login = '" + editTextLogin.getText().toString() + "' AND PASSWORD = '" + editTextPassword.getText().toString() + "';");
+                if(players.isEmpty()){
+                    Toast.makeText(this, "Error login/password.", Toast.LENGTH_LONG).show();
+                }else{
+                    intent = new Intent(this,ConnectionModeActivity.class);
+                    ((AndroidBattleship) this.getApplication()).setConnectedPlayer((Player) players.get(0));
+                    Toast.makeText(this, "Connected as " + ((Player) players.get(0)).getLogin(), Toast.LENGTH_LONG).show();
+                    startActivity(intent);
+                }
+
                 break;
             case R.id.button_sign_in:
                 intent = new Intent(this, SignInActivity.class);
+                startActivity(intent);
                 break;
         }
-        startActivity(intent);
+
     }
 
 }

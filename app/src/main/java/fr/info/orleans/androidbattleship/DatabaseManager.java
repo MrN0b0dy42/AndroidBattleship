@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import fr.info.orleans.androidbattleship.model.Player;
 /**
  * Created by Ludo on 09/12/2015.
  */
-public class DatabaseManager extends SQLiteOpenHelper {
+public class DatabaseManager extends SQLiteOpenHelper{
 
     // database version
     private static final int DATABASE_VERSION = 1;
@@ -31,10 +32,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public static final String PLAYER_TABLE_CREATE =
             "CREATE TABLE " + PLAYER_TABLE_NAME + " (" +
                     PLAYER_KEY + " INTEGER PRIMARY KEY  NOT NULL, " +
-                    PLAYER_FIRSTNAME + " TEXT NOT NULL, " +
-                    PLAYER_LASTNAME + " TEXT NOT NULL, " +
-                    PLAYER_LOGIN + " TEXT NOT NULL UNIQUE, "+
-                    PLAYER_PASSWORD + " TEXT NOT NULL );";
+                    PLAYER_FIRSTNAME + " TEXT NOT NULL CHECK(length(firstname) > 0), " +
+                    PLAYER_LASTNAME + " TEXT NOT NULL CHECK(length(lastname) > 0), " +
+                    PLAYER_LOGIN + " TEXT NOT NULL UNIQUE CHECK(length(login) > 0), "+
+                    PLAYER_PASSWORD + " TEXT NOT NULL CHECK(length(password) > 0) );";
 
     public static final String PLAYER_TABLE_DROP = "DROP TABLE IF EXISTS " + PLAYER_TABLE_NAME + ";";
 
@@ -47,7 +48,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // SQL statement to create book table
+        // SQL statement to create player table
         db.execSQL(PLAYER_TABLE_CREATE);
         Log.d("LOGCAT", "Table Player created");
     }
@@ -58,29 +59,31 @@ public class DatabaseManager extends SQLiteOpenHelper {
         this.onCreate(db);
     }
 
-    public void createPlayer(Player p){
+    public void insertPlayer(Player p) throws Exception{
         // get reference of the database
         SQLiteDatabase db = this.getWritableDatabase();
 
         // make values to be inserted
         ContentValues values = new ContentValues();
         values.put(PLAYER_FIRSTNAME,p.getFirstname());
-        values.put(PLAYER_LASTNAME,p.getLastname());
+        values.put(PLAYER_LASTNAME, p.getLastname());
         values.put(PLAYER_LOGIN,p.getLogin());
-        values.put(PLAYER_PASSWORD,p.getPassword());
+        values.put(PLAYER_PASSWORD, p.getPassword());
 
         // insert player
-        db.insert(PLAYER_TABLE_NAME, null, values);
+        p.setIdPlayer((int) db.insert(PLAYER_TABLE_NAME, null, values));
+        if(p.getIdPlayer() == -1) throw new Exception();
+
 
         // close db transaction
         db.close();
     }
 
-    public Player readPlayer(int id){
+    public Player selectPlayerById(int id){
         // get reference of the database
         SQLiteDatabase db = this.getWritableDatabase();
 
-        // get book query
+        // get player query
         Cursor cursor = db.query(PLAYER_TABLE_NAME,
                 COLUMNS, " idPlayer = ?", new String[]{String.valueOf(id)}, null, null, null, null);
 
@@ -89,7 +92,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
 
         Player p = new Player();
-        p.setIdPlayer(Integer.parseInt(cursor.getString(0)));
+        p.setIdPlayer(cursor.getInt(0));
         p.setFirstname(cursor.getString(1));
         p.setLastname(cursor.getString(2));
         p.setLogin(cursor.getString(3));
@@ -110,7 +113,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 p = new Player();
-                p.setIdPlayer(Integer.parseInt(cursor.getString(0)));
+                p.setIdPlayer(cursor.getInt(0));
                 p.setFirstname(cursor.getString(1));
                 p.setLastname(cursor.getString(2));
                 p.setLogin(cursor.getString(3));
@@ -145,5 +148,28 @@ public class DatabaseManager extends SQLiteOpenHelper {
         // delete player
         db.delete(PLAYER_TABLE_NAME, PLAYER_KEY + " = ?", new String[] { String.valueOf(p.getIdPlayer()) });
         db.close();
+    }
+
+    public List selectPlayerByQuery(String query){
+        List players = new LinkedList();
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        // parse all results
+
+        Player p = null;
+
+        if (cursor.moveToFirst()) {
+            do {
+                p = new Player();
+                p.setIdPlayer(cursor.getInt(0));
+                p.setFirstname(cursor.getString(1));
+                p.setLastname(cursor.getString(2));
+                p.setLogin(cursor.getString(3));
+                p.setPassword(cursor.getString(4));
+
+                players.add(p);
+            } while (cursor.moveToNext());
+        }
+        return players;
     }
 }

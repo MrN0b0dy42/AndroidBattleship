@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import fr.info.orleans.androidbattleship.R;
+import fr.info.orleans.androidbattleship.model.Player;
 
 public class ConnectionModeActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -17,6 +18,8 @@ public class ConnectionModeActivity extends AppCompatActivity implements View.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connection_mode);
+        Intent intent = getIntent();
+        Player p = (Player) intent.getSerializableExtra("ConnectedPlayer");
         buttonBluetooth = (Button) findViewById(R.id.button_bluetooth);
         buttonWifi = (Button) findViewById(R.id.button_wifi);
         buttonBluetooth.setOnClickListener(this);
@@ -28,13 +31,15 @@ public class ConnectionModeActivity extends AppCompatActivity implements View.On
         Intent intent = null;
         switch (v.getId()) {
             case R.id.button_bluetooth:
-                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                intent = new Intent(this,BluetoothActivity.class);
+                startActivity(intent);
                 break;
             case R.id.button_wifi:
-                //Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
-                //intent = new Intent(this,ConnectionActivity.class);
+                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
                 break;
         }
+
     }
 
 }

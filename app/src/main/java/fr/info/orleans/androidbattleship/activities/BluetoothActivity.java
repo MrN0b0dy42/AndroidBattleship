@@ -9,9 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,13 +23,14 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 import fr.info.orleans.androidbattleship.R;
 
-public class BluetoothActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class BluetoothActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     ArrayAdapter<String> listAdapter;
     ListView listView;
@@ -40,6 +41,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     protected static final int SUCCESS_CONNECT = 0;
     protected static final int MESSAGE_READ = 1;
+    private static final int REQUEST_PAIR_DEVICE = 1;
+    private String EXTRA_DEVICE = "android.bluetooth.device.extra.DEVICE";
     IntentFilter filter;
     BroadcastReceiver receiver;
     String tag = "debugging";
@@ -106,6 +109,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     private void init() {
         listView= (ListView) findViewById(R.id.listViewBluetoothDevices);
         listView.setOnItemClickListener(this);
+        listView.setOnItemLongClickListener(this);
         listAdapter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
         listView.setAdapter(listAdapter);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -180,26 +184,61 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         if(btAdapter.isDiscovering()){
             btAdapter.cancelDiscovery();
         }
+
+        BluetoothDevice selectedDevice = devices.get(arg2);
+
         if(listAdapter.getItem(arg2).contains("Paired")){
 
-            BluetoothDevice selectedDevice = devices.get(arg2);
             AcceptThread acceptThread = new AcceptThread();
             ConnectThread connect = new ConnectThread(selectedDevice);
             connect.start();
-            try {
-
-                BluetoothSocket btSocket = selectedDevice.createRfcommSocketToServiceRecord( MY_UUID );
-                btSocket.getInputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
             Log.i(tag, "in click listener");
         }
         else{
-            Toast.makeText(getApplicationContext(), "device is not paired", Toast.LENGTH_SHORT).show();
+
+            pairDevice(selectedDevice);
+            //ces deux lignes refresh l'activité, bug pour le jumelage car l'activité se refresh avant que le jumelage soit accepté
+
+            finish();
+            startActivity(getIntent());
         }
     }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        BluetoothDevice selectedDevice = devices.get(position);
+        unpairDevice(selectedDevice);
+        //ces deux lignes refresh l'activité, OK pour unPair
+        finish();
+        startActivity(getIntent());
+        return true;
+    }
+
+
+    private void pairDevice(BluetoothDevice device) {
+        try {
+            Log.d("pairDevice()", "Start Pairing...");
+            Method m = device.getClass().getMethod("createBond", (Class[]) null);
+            m.invoke(device, (Object[]) null);
+            Log.d("pairDevice()", "Pairing finished.");
+        } catch (Exception e) {
+            Log.e("pairDevice()", e.getMessage());
+        }
+    }
+
+    private void unpairDevice(BluetoothDevice device) {
+        try {
+            Log.d("unpairDevice()", "Start Un-Pairing...");
+            Method m = device.getClass().getMethod("removeBond", (Class[]) null);
+            m.invoke(device, (Object[]) null);
+            Log.d("unpairDevice()", "Un-Pairing finished.");
+        } catch (Exception e) {
+            Log.e("unpairDevice()", e.getMessage());
+        }
+    }
+
+
 
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;

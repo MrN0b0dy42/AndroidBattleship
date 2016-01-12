@@ -12,27 +12,24 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import fr.info.orleans.androidbattleship.R;
 
-public class BluetoothActivity extends Activity implements AdapterView.OnItemClickListener {
+public class BluetoothActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     ArrayAdapter<String> listAdapter;
     ListView listView;
@@ -186,14 +183,71 @@ public class BluetoothActivity extends Activity implements AdapterView.OnItemCli
         if(listAdapter.getItem(arg2).contains("Paired")){
 
             BluetoothDevice selectedDevice = devices.get(arg2);
+            AcceptThread acceptThread = new AcceptThread();
             ConnectThread connect = new ConnectThread(selectedDevice);
             connect.start();
+            try {
+
+                BluetoothSocket btSocket = selectedDevice.createRfcommSocketToServiceRecord( MY_UUID );
+                btSocket.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             Log.i(tag, "in click listener");
         }
         else{
             Toast.makeText(getApplicationContext(), "device is not paired", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private class AcceptThread extends Thread {
+        private final BluetoothServerSocket mmServerSocket;
+
+        public AcceptThread() {
+            BluetoothServerSocket tmp = null;
+            try {
+                tmp = btAdapter.listenUsingRfcommWithServiceRecord("Server", MY_UUID);
+            } catch (IOException e) { }
+            mmServerSocket = tmp;
+        }
+
+        public void run() {
+            BluetoothSocket socket = null;
+            // Keep listening until exception occurs or a socket is returned
+            while (true) {
+                try {
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    break;
+                }
+                // If a connection was accepted
+                if (socket != null) {
+                    // Do work to manage the connection (in a separate thread)
+                    manageConnectedSocket(socket);
+                    try {
+                        mmServerSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+
+        private void manageConnectedSocket(BluetoothSocket socket) {
+            Log.i(tag,"AcceptThread.manageConnectedSocket");
+        }
+
+        /** Will cancel the listening socket, and cause the thread to finish */
+        public void cancel() {
+            try {
+                mmServerSocket.close();
+            } catch (IOException e) { }
+        }
+    }
+
+
 
     private class ConnectThread extends Thread {
 
@@ -204,6 +258,7 @@ public class BluetoothActivity extends Activity implements AdapterView.OnItemCli
             // Use a temporary object that is later assigned to mmSocket,
             // because mmSocket is final
             BluetoothSocket tmp = null;
+
             mmDevice = device;
             Log.i(tag, "construct");
             // Get a BluetoothSocket to connect with the given BluetoothDevice

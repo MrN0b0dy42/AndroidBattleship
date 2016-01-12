@@ -16,7 +16,7 @@ import fr.info.orleans.androidbattleship.services.BackgroundMusicService;
 public class StartActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button buttonPlayerVsComputer, buttonPlayerVsPlayer, buttonSettings;
-    DatabaseManager db = new DatabaseManager(this);
+    private DatabaseManager db = new DatabaseManager(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +56,7 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.button_settings:
                 intent = new Intent(this, SettingsActivity.class);
+
                 break;
         }
         startActivity(intent);

@@ -23,6 +23,7 @@ public class DatabaseManager extends SQLiteOpenHelper{
     // database name
     private static final String DATABASE_NAME = "AndroidBattleship";
 
+    //PLAYER TABLE
     public static final String PLAYER_KEY = "idPlayer";
     public static final String PLAYER_FIRSTNAME = "firstname";
     public static final String PLAYER_LASTNAME = "lastname";
@@ -34,12 +35,31 @@ public class DatabaseManager extends SQLiteOpenHelper{
                     PLAYER_KEY + " INTEGER PRIMARY KEY  NOT NULL, " +
                     PLAYER_FIRSTNAME + " TEXT NOT NULL CHECK(length(firstname) > 0), " +
                     PLAYER_LASTNAME + " TEXT NOT NULL CHECK(length(lastname) > 0), " +
-                    PLAYER_LOGIN + " TEXT NOT NULL UNIQUE CHECK(length(login) > 0), "+
+                    PLAYER_LOGIN + " TEXT NOT NULL CHECK(length(login) > 0), "+
                     PLAYER_PASSWORD + " TEXT NOT NULL CHECK(length(password) > 0) );";
 
     public static final String PLAYER_TABLE_DROP = "DROP TABLE IF EXISTS " + PLAYER_TABLE_NAME + ";";
 
-    private static final String[] COLUMNS = { PLAYER_KEY, PLAYER_FIRSTNAME, PLAYER_LASTNAME , PLAYER_LOGIN , PLAYER_PASSWORD };
+    private static final String[] COLUMNS_PLAYER = { PLAYER_KEY, PLAYER_FIRSTNAME, PLAYER_LASTNAME , PLAYER_LOGIN , PLAYER_PASSWORD };
+
+
+
+
+    //VERSUS TABLE
+    public static final String VERSUS_ID_WINNER = "idWinner";
+    public static final String VERSUS_ID_LOOSER = "idLooser";
+    public static final String VERSUS_DATE = "gameDate";
+    public static final String VERSUS_TABLE_NAME = "Versus";
+    public static final String VERSUS_TABLE_CREATE =
+            "CREATE TABLE " + VERSUS_TABLE_NAME + " (" +
+                    VERSUS_ID_WINNER + " INTEGER NOT NULL, " +
+                    VERSUS_ID_LOOSER + " INTEGER NOT NULL, " +
+                    VERSUS_DATE + " DATETIME NOT NULL , " +
+                    "PRIMARY KEY ("+ VERSUS_ID_WINNER +","+ VERSUS_ID_LOOSER +") );";
+
+    public static final String VERSUS_TABLE_DROP = "DROP TABLE IF EXISTS " + VERSUS_TABLE_NAME + ";";
+
+    private static final String[] COLUMNS_VERSUS = { VERSUS_ID_WINNER, VERSUS_ID_LOOSER, VERSUS_DATE};
 
     public DatabaseManager(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -50,12 +70,15 @@ public class DatabaseManager extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         // SQL statement to create player table
         db.execSQL(PLAYER_TABLE_CREATE);
+        db.execSQL(VERSUS_TABLE_CREATE);
         Log.d("LOGCAT", "Table Player created");
+        Log.d("LOGCAT", "Table Versus created");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(PLAYER_TABLE_DROP);
+        db.execSQL(VERSUS_TABLE_DROP);
         this.onCreate(db);
     }
 
@@ -85,7 +108,7 @@ public class DatabaseManager extends SQLiteOpenHelper{
 
         // get player query
         Cursor cursor = db.query(PLAYER_TABLE_NAME,
-                COLUMNS, " idPlayer = ?", new String[]{String.valueOf(id)}, null, null, null, null);
+                COLUMNS_PLAYER, " idPlayer = ?", new String[]{String.valueOf(id)}, null, null, null, null);
 
         if(cursor != null){
             cursor.moveToFirst();

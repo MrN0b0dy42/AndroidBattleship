@@ -16,6 +16,7 @@ public class SingleplayerMenuActivity extends AppCompatActivity implements View.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_singleplayer_menu);
         buttonNewGame = (Button) findViewById(R.id.button_new_game);
@@ -26,6 +27,7 @@ public class SingleplayerMenuActivity extends AppCompatActivity implements View.
 
     @Override
     public void onClick(View v) {
+
         Intent intent = null;
         switch (v.getId()) {
             case R.id.button_new_game:

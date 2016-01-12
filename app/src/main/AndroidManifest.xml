@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fr.info.orleans.androidbattleship">
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
     <application
         android:name=".AndroidBattleship"
         android:allowBackup="true"
@@ -27,25 +30,31 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/activity_settings_label"
+            android:parentActivityName=".activities.StartActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activities.ConnectionModeActivity"
             android:label="@string/activity_connection_mode_label"
+            android:parentActivityName=".activities.StartActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activities.SingleplayerMenuActivity"
             android:label="@string/activity_singleplayer_menu_label"
+            android:parentActivityName=".activities.StartActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activities.DifficultyModeActivity"
             android:label="@string/activity_difficulty_mode_label"
+            android:parentActivityName=".activities.SingleplayerMenuActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activities.ShipsArrangementActivity"
             android:label="@string/activity_shis_arrangement_label"
+            android:parentActivityName=".activities.DifficultyModeActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activities.GameActivity"
+            android:parentActivityName=".activities.SingleplayerMenuActivity"
             android:screenOrientation="landscape" />
 
         <service
@@ -55,32 +64,41 @@
 
         <activity
             android:name=".activities.AccountActivity"
-            android:screenOrientation="landscape"
             android:label="@string/title_activity_account"
-            android:parentActivityName=".activities.StartActivity">
+            android:parentActivityName=".activities.StartActivity"
+            android:screenOrientation="landscape">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fr.info.orleans.androidbattleship.activities.StartActivity" />
         </activity>
         <activity
             android:name=".activities.SignInActivity"
-            android:screenOrientation="landscape"
             android:label="@string/title_activity_sign_in"
-            android:parentActivityName=".activities.AccountActivity">
+            android:parentActivityName=".activities.AccountActivity"
+            android:screenOrientation="landscape">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fr.info.orleans.androidbattleship.activities.AccountActivity" />
         </activity>
         <activity
             android:name=".activities.BluetoothActivity"
-            android:screenOrientation="landscape"
             android:label="@string/title_activity_bluetooth"
-            android:parentActivityName=".activities.ConnectionModeActivity">
+            android:parentActivityName=".activities.ConnectionModeActivity"
+            android:screenOrientation="landscape">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fr.info.orleans.androidbattleship.activities.ConnectionModeActivity" />
         </activity>
+        <activity
+            android:name=".activities.ManageAccountActivity"
+            android:label="@string/title_activity_manage_account"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".activities.ConnectionActivity"
+            android:label="@string/title_activity_connection"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:screenOrientation="landscape" />
     </application>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
 </manifest>

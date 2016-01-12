@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
+import fr.info.orleans.androidbattleship.AndroidBattleship;
 import fr.info.orleans.androidbattleship.R;
 import fr.info.orleans.androidbattleship.services.BackgroundAmbianceService;
 import fr.info.orleans.androidbattleship.services.BackgroundMusicService;
@@ -18,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public static final String SETTINGS_FILE_NAME = "settings";
 
     private CheckBox checkBoxMusic, checkBoxAmbiance;
+    private Button buttonManageAccount,buttonDisconnect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,8 +29,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.activity_settings);
         checkBoxMusic = (CheckBox) findViewById(R.id.checkbox_music);
         checkBoxAmbiance = (CheckBox) findViewById(R.id.checkbox_ambiance);
+        buttonManageAccount = (Button) findViewById(R.id.buttonManageAccount);
+        buttonDisconnect = (Button) findViewById(R.id.buttonDisconnect);
         checkBoxMusic.setOnClickListener(this);
         checkBoxAmbiance.setOnClickListener(this);
+        buttonManageAccount.setOnClickListener(this);
+        buttonDisconnect.setOnClickListener(this);
         SharedPreferences settings = getSharedPreferences(SETTINGS_FILE_NAME, 0);
         boolean musicTurnOn = settings.getBoolean("music", true);
         if (musicTurnOn)
@@ -65,6 +73,23 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 } else {
                     on = false;
                     stopService(new Intent(this, BackgroundAmbianceService.class));
+                }
+                break;
+            case R.id.buttonManageAccount:
+                Intent intent = null;
+                if(((AndroidBattleship) this.getApplication()).getConnectedPlayer() == null){
+                    intent = new Intent(this, ConnectionActivity.class);
+                }else{
+                    intent = new Intent(this, ManageAccountActivity.class);
+                }
+                startActivity(intent);
+                break;
+            case R.id.buttonDisconnect:
+                if(((AndroidBattleship) this.getApplication()).getConnectedPlayer() == null){
+                    Toast.makeText(SettingsActivity.this, "Not connected yet.", Toast.LENGTH_SHORT).show();
+                }else{
+                    ((AndroidBattleship) this.getApplication()).setConnectedPlayer(null);
+                    Toast.makeText(SettingsActivity.this, "Disconnected", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }

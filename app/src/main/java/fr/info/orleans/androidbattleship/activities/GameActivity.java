@@ -44,6 +44,9 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
     public static final String KEY_ENEMY_GRID = "ENEMY_GRID";
     public static final String KEY_DIFFICULTY = "DIFFICULTY";
 
+    //test si convaicant
+    public boolean TEST = true;
+
 
     private String difficulty;
     private TextView textViewHintTurn;
@@ -255,6 +258,8 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                                     case HIT:
                                         idRes = R.drawable.hit;
                                         break;
+                                    case DESTROY:
+                                        idRes = R.drawable.destroy;
                                     case MISS:
                                         idRes = R.drawable.miss;
                                         break;
@@ -297,10 +302,16 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                                             case SHIP:
                                                 imageViews[finalI][finalJ].setBackgroundResource(R.drawable.hit);
                                                 grid.setCellAt(finalI, finalJ, Grid.Cell.HIT);
-                                                if (enemyGrid.isShipDestroyed(finalI, finalJ))
+                                                if (enemyGrid.isShipDestroyed(finalI, finalJ)){
                                                     playSound(SOUND_INDEX_DESTROY);
+                                                    changeShipFlowHuman(imageViews, finalI, finalJ);
+
+                                                    if(TEST && !gameOver) {
+                                                        changeAroundShipFlowHuman(imageViews, grid, finalI, finalJ, 10);
+                                                    }
+                                                }
                                                 else
-                                                    playSound(SOUND_INDEX_HIT);
+                                                playSound(SOUND_INDEX_HIT);
                                                 break;
                                             default:
                                                 return;
@@ -330,6 +341,76 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                 }
             }
         });
+    }
+
+    private void changeShipFlowHuman(View[][] imageViews,int x, int y) {
+        int[][] shipFlow = enemyGrid.shipFlow(x, y);
+        if(shipFlow != null) {
+            for (int sf = 0; sf < shipFlow[0].length; sf++) {
+                imageViews[shipFlow[0][sf]][shipFlow[1][sf]].setBackgroundResource(R.drawable.destroy);
+                //les mettre en setCell DESTROY ? risque d'erreur si changement ?
+            }
+        }
+        else
+            System.out.println("NULL CSFH");
+    }
+
+    private void changeShipFlowComputer(int x, int y) {
+        int[][] shipFlow = playerGrid.shipFlow(x, y);
+        if(shipFlow != null) {
+            for (int sf = 0; sf < shipFlow[0].length; sf++) {
+                imageViewsPlayer[shipFlow[0][sf]][shipFlow[1][sf]].setBackgroundResource(R.drawable.destroy);
+                //les mettre en setCell DESTROY ? risque d'erreur si changement ?
+            }
+        }
+        else
+            System.out.println("NULL CSFC");
+    }
+
+    private void changeAroundShipFlowHuman(View[][] imageViews, Grid grid, int x, int y, int gridLength){
+        int[][] shipFlowAround = enemyGrid.shipFlowAround(x, y, gridLength);
+        if(shipFlowAround != null) {
+            for (int sfa = 0; sfa < shipFlowAround[0].length; sfa++) {
+                System.out.println("ATTENTION sfa " + sfa + " -> "  + shipFlowAround[0][sfa] + " | " + shipFlowAround[1][sfa]);
+                if (shipFlowAround[0][sfa] != -1 && shipFlowAround[1][sfa] != -1) {
+                    Grid.Cell cellTest = grid.getCells()[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]];
+                    System.out.println("celltest : " + cellTest);
+                    switch (cellTest) {
+                        case EMPTY:
+                            imageViews[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]].setBackgroundResource(R.drawable.miss);
+                            grid.setCellAt(shipFlowAround[0][sfa], shipFlowAround[1][sfa], Grid.Cell.MISS);
+                            break;
+                        default:
+                    }
+                }
+            }
+        }
+        else
+            System.out.println("NULL CASFH");
+        //musique du miss ? Il faudrait d'abord finir l'autre de la destruction... mais est ce utile ? (de mettre miss)
+    }
+
+    private void changeAroundShipFlowComputer(int x, int y, int gridLength){
+        int[][] shipFlowAround = playerGrid.shipFlowAround(x, y, gridLength);
+        if(shipFlowAround != null) {
+            for (int sfa = 0; sfa < shipFlowAround[0].length; sfa++) {
+                System.out.println("ATTENTION sfa " + sfa + " -> "  + shipFlowAround[0][sfa] + " | " + shipFlowAround[1][sfa]);
+                if (shipFlowAround[0][sfa] != -1 && shipFlowAround[1][sfa] != -1) {
+                    Grid.Cell cellTest = playerGrid.getCells()[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]];
+                    System.out.println("celltest : " + cellTest);
+                    switch (cellTest) {
+                        case EMPTY:
+                            imageViewsPlayer[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]].setBackgroundResource(R.drawable.miss);
+                            playerGrid.setCellAt(shipFlowAround[0][sfa], shipFlowAround[1][sfa], Grid.Cell.MISS);
+                            break;
+                        default:
+                    }
+                }
+            }
+        }
+        else
+            System.out.println("NULL CASFC");
+        //musique du miss ? Il faudrait d'abord finir l'autre de la destruction... mais est ce utile ? (de mettre miss)
     }
 
     private String getLetter(int i) {
@@ -377,6 +458,9 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
             } else {
                 idRes = R.drawable.hit;
                 playerGrid.setCellAt(x, y, Grid.Cell.HIT);
+                if (playerGrid.isShipDestroyed(x, y)) {
+
+                }
             }
             final int finalX = x;
             final int finalY = y;
@@ -389,8 +473,11 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                             playSound(SOUND_INDEX_MISS);
                             break;
                         case R.drawable.hit:
-                            if (playerGrid.isShipDestroyed(finalX, finalY))
+                            if (playerGrid.isShipDestroyed(finalX, finalY)){
+                                changeShipFlowComputer(finalX, finalY);
+                                changeAroundShipFlowComputer(finalX, finalY, 10);
                                 playSound(SOUND_INDEX_DESTROY);
+                            }
                             else
                                 playSound(SOUND_INDEX_HIT);
                             break;
@@ -461,8 +548,11 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
                             playSound(SOUND_INDEX_MISS);
                             break;
                         case R.drawable.hit:
-                            if (playerGrid.isShipDestroyed(finalX, finalY))
+                            if (playerGrid.isShipDestroyed(finalX, finalY)) {
+                                changeShipFlowComputer(finalX, finalY);
+                                changeAroundShipFlowComputer(finalX, finalY, 10);
                                 playSound(SOUND_INDEX_DESTROY);
+                            }
                             else
                                 playSound(SOUND_INDEX_HIT);
                             break;
@@ -677,15 +767,15 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
             int x=difference(this.hunt.get(hunt.size() - 2).getX(), this.hunt.get(hunt.size() - 1).getX());
             int y=difference(this.hunt.get(hunt.size()-2).getY(),this.hunt.get(hunt.size()-1).getY());
             c= new Coordinate(this.hunt.get(hunt.size() - 1).getX()+x,this.hunt.get(hunt.size()-1).getY()+y);
-            if(!notYetShot(c.getX(), c.getY())){
-                changeState=2;
-                return selectSpecificCase();
-            }
-            else if(c.getX()<0 || c.getX()>9){
+            if(c.getX()<0 || c.getX()>9){
                 changeState=2;
                 return selectSpecificCase();
             }
             else if(c.getY()<0 || c.getY()>9){
+                changeState=2;
+                return selectSpecificCase();
+            }
+            else if(!notYetShot(c.getX(), c.getY())){
                 changeState=2;
                 return selectSpecificCase();
             }
@@ -706,7 +796,4 @@ public class GameActivity extends AppCompatActivity implements Runnable, View.On
         }
         return c;
     }
-
-
-
 }

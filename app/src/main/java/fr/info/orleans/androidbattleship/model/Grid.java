@@ -24,7 +24,7 @@ public class Grid implements Serializable {
     public static final int NB_SUBMARINES = 1;
     public static final int NB_TORPEDO_BOATS = 2;
 
-    public enum Cell { EMPTY, SHIP, MISS, HIT }
+    public enum Cell { EMPTY, SHIP, MISS, HIT, DESTROY }
 
     private Cell[][] cells;
     private Ship[] ships;
@@ -109,9 +109,11 @@ public class Grid implements Serializable {
 
     private Ship getShipByCoordinate(int x, int y) {
         Ship ship;
+        System.out.println("nombre de bateau : " + NB_SHIPS + "\nx | y : " + x + " | " + y);
         for (int i = 0; i < NB_SHIPS; i++) {
             ship = ships[i];
             for (int j = 0; j < ship.getLength(); j++) {
+                //System.out.println("bateau n°" + i + " morecau n°" + j + " x | y : " + x + " | " + y);
                 if (ship.getCoordinates()[j].getX() == x && ship.getCoordinates()[j].getY() == y)
                     return ship;
             }
@@ -119,6 +121,25 @@ public class Grid implements Serializable {
         return null;
     }
 
+    public int[][] shipFlow(int x, int y) {
+        Ship ship = getShipByCoordinate(x, y);
+        if(ship == null){
+            System.out.println("Envoie d'un null : " + x + " | " + y);
+            return null;
+        }
+        int[][] coordShip = new int[2][ship.getLength()];
+        for (int i = 0; i < ship.getLength(); i++) {
+            coordShip[0][i] = ship.getCoordinates()[i].getX();
+            coordShip[1][i] = ship.getCoordinates()[i].getY();
+        }
+        return coordShip;
+    }
+
+    public int[][] shipFlowAround(int x, int y, int gridLength) {
+        Ship ship = getShipByCoordinate(x, y);
+        int[][] coordShipAround = ship.getAround(ship.getCoordinates()[0].getX(), ship.getCoordinates()[0].getY(), gridLength);
+        return coordShipAround;
+    }
 
     private int generateRandomDigit() {
         return new Random().nextInt(SIZE);
@@ -230,5 +251,6 @@ public class Grid implements Serializable {
             if (y + 1 <= 9) validCoordinates[x][y + 1] = false;
         }
     }
+
 
 }

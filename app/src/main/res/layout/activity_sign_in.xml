@@ -6,6 +6,11 @@
     android:gravity="center"
     android:background="@color/paleBlue"
     tools:context="fr.info.orleans.androidbattleship.activities.SignInActivity">
+
+    <!--Dummy view to prevent keyboard pop-->
+    <View android:layout_width="0dip" android:layout_height="0dip"
+          android:focusableInTouchMode="true"
+          android:focusable="true"/>
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">

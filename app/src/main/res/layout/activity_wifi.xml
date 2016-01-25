@@ -8,7 +8,21 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/paleBlue"
-    tools:context="fr.info.orleans.androidbattleship.activities.BluetoothActivity">
+    tools:context="fr.info.orleans.androidbattleship.activities.WifiActivity">
+
+    <menu xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <item android:id="@+id/registerWfdReceiver"
+            android:title="Register receiver"
+            android:showAsAction="ifRoom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <item android:id="@+id/unregisterWfdReceiver"
+            android:title="Unregister receiver"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </menu>
 
     <TableLayout
         android:layout_width="wrap_content"
@@ -17,12 +31,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Bluetooth devices"
-            android:id="@+id/textViewBluetoothDevices"
+            android:text="Wifi devices"
+            android:id="@+id/textViewWifiDevices"
             android:layout_column="5" />
 
         <ListView
-            android:id="@+id/listViewBluetoothDevices"
+            android:id="@+id/listViewWifiDevices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>

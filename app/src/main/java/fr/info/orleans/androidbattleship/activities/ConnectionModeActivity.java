@@ -33,12 +33,13 @@ public class ConnectionModeActivity extends AppCompatActivity implements View.On
             case R.id.button_bluetooth:
                 //Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
                 intent = new Intent(this,BluetoothActivity.class);
-                startActivity(intent);
+
                 break;
             case R.id.button_wifi:
-                Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                intent = new Intent(this,WifiActivity.class);
                 break;
         }
+        startActivity(intent);
 
     }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/registerWfdReceiver"
+        android:title="Register Receiver" />
+
+    <item android:id="@+id/unregisterWfdReceiver"
+        android:title="Unregister Receiver" />
+
+    <item android:id="@+id/discoverDevices"
+        android:title="Discover devices" />
+
+</menu>

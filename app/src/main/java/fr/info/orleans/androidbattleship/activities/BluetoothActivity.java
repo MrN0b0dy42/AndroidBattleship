@@ -50,20 +50,26 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         @Override
         public void handleMessage(Message msg) {
             Log.i(tag, "in handler");
-            super.handleMessage(msg);
+            byte[] writeBuf = (byte[]) msg.obj;
+            int begin = (int)msg.arg1;
+            int end = (int)msg.arg2;
+
             switch(msg.what){
-                case SUCCESS_CONNECT:
-                    // DO something
-                    ConnectedThread connectedThread = new ConnectedThread((BluetoothSocket)msg.obj);
-                    Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
-                    String s = "successfully connected";
-                    connectedThread.write(s.getBytes());
-                    Log.i(tag, "connected");
-                    break;
+//                case SUCCESS_CONNECT:
+//                    // DO something
+//                    Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
+//                    String s = "successfully connected";
+//                    connectedThread.write(s.getBytes());
+//                    Log.i(tag, "connected");
+//                    break;
                 case MESSAGE_READ:
-                    byte[] readBuf = (byte[])msg.obj;
-                    String string = new String(readBuf);
-                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
+
+//                    byte[] readBuf = (byte[])msg.obj;
+//                    String string = new String(readBuf);
+//                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
+//                    break;
+                    String writeMessage = new String(writeBuf);
+                    writeMessage = writeMessage.substring(begin, end);
                     break;
             }
         }
@@ -198,10 +204,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         else{
 
             pairDevice(selectedDevice);
-            //ces deux lignes refresh l'activité, bug pour le jumelage car l'activité se refresh avant que le jumelage soit accepté
 
-            finish();
-            startActivity(getIntent());
+
         }
     }
 
@@ -219,8 +223,9 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     private void pairDevice(BluetoothDevice device) {
         try {
             Log.d("pairDevice()", "Start Pairing...");
-            Method m = device.getClass().getMethod("createBond", (Class[]) null);
-            m.invoke(device, (Object[]) null);
+            Intent intentBluetooth = new Intent();
+            intentBluetooth.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+            startActivity(intentBluetooth);
             Log.d("pairDevice()", "Pairing finished.");
         } catch (Exception e) {
             Log.e("pairDevice()", e.getMessage());
@@ -297,7 +302,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             // Use a temporary object that is later assigned to mmSocket,
             // because mmSocket is final
             BluetoothSocket tmp = null;
-
             mmDevice = device;
             Log.i(tag, "construct");
             // Get a BluetoothSocket to connect with the given BluetoothDevice
@@ -320,7 +324,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                 // until it succeeds or throws an exception
                 mmSocket.connect();
                 Log.i(tag, "connect - succeeded");
-            } catch (IOException connectException) {    Log.i(tag, "connect failed");
+            } catch (IOException connectException) {
+                Log.i(tag, "connect failed");
                 // Unable to connect; close the socket and get out
                 try {
                     mmSocket.close();
@@ -329,8 +334,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             }
 
             // Do work to manage the connection (in a separate thread)
-
-            mHandler.obtainMessage(SUCCESS_CONNECT, mmSocket).sendToTarget();
+            ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
+            mConnectedThread.start();
         }
 
 
@@ -365,19 +370,27 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         }
 
         public void run() {
-            byte[] buffer;  // buffer store for the stream
-            int bytes; // bytes returned from read()
+            byte[] buffer = new byte[1024];;  // buffer store for the stream
+            int bytes = 0; // bytes returned from read()
+            int begin = 0;
 
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 try {
                     // Read from the InputStream
-                    buffer = new byte[1024];
-                    bytes = mmInStream.read(buffer);
+                    bytes += mmInStream.read(buffer,bytes,buffer.length - bytes);
                     // Send the obtained bytes to the UI activity
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();
-
+                    for(int i = begin ; i < bytes ; i++){
+                        if(buffer[i] == "#".getBytes()[0]){
+                            mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                                    .sendToTarget();
+                            begin = i + 1;
+                            if(i == bytes - 1){
+                                bytes = 0;
+                                begin = 0;
+                            }
+                        }
+                    }
                 } catch (IOException e) {
                     break;
                 }

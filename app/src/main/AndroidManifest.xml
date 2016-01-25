@@ -66,7 +66,8 @@
             android:name=".activities.AccountActivity"
             android:label="@string/title_activity_account"
             android:parentActivityName=".activities.StartActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fr.info.orleans.androidbattleship.activities.StartActivity" />
@@ -75,7 +76,8 @@
             android:name=".activities.SignInActivity"
             android:label="@string/title_activity_sign_in"
             android:parentActivityName=".activities.AccountActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fr.info.orleans.androidbattleship.activities.AccountActivity" />
@@ -93,12 +95,14 @@
             android:name=".activities.ManageAccountActivity"
             android:label="@string/title_activity_manage_account"
             android:parentActivityName=".activities.SettingsActivity"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="landscape"
+        android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".activities.ConnectionActivity"
             android:label="@string/title_activity_connection"
             android:parentActivityName=".activities.SettingsActivity"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize"/>
     </application>
 
 </manifest>

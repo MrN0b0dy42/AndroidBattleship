@@ -45,11 +45,11 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
         try{
             db.insertPlayer(p);
-            Toast.makeText(this, "Account created.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getText(R.string.toast_account_created), Toast.LENGTH_SHORT).show();
             intent = new Intent(this, AccountActivity.class);
             startActivity(intent);
         }catch (Exception e){
-            Toast.makeText(this, "DB insertion error.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getText(R.string.toast_db_insert_error), Toast.LENGTH_SHORT).show();
         }
     }
 }

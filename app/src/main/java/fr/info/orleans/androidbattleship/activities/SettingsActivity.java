@@ -86,10 +86,10 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.buttonDisconnect:
                 if(((AndroidBattleship) this.getApplication()).getConnectedPlayer() == null){
-                    Toast.makeText(SettingsActivity.this, "Not connected yet.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SettingsActivity.this, getText(R.string.toast_not_connected_yet), Toast.LENGTH_SHORT).show();
                 }else{
                     ((AndroidBattleship) this.getApplication()).setConnectedPlayer(null);
-                    Toast.makeText(SettingsActivity.this, "Disconnected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SettingsActivity.this, getText(R.string.toast_disconnected), Toast.LENGTH_SHORT).show();
                 }
                 break;
         }

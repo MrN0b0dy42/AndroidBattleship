@@ -32,4 +32,24 @@
     <string name="toast_save_text">Sauvegarde indisponible durant le tour adverse.</string>
     <string name="checkbox_ambiance_text">Activer l\'ambiance</string>
     <string name="toast_no_saved_game_text">Pas de partie précédente sauvegardée.</string>
+    <string name="buttonSignIn">Inscription</string>
+    <string name="buttonSignUp">Connexion</string>
+    <string name="editTextPassword">Mot de passe</string>
+    <string name="editTextLogin">Login</string>
+    <string name="buttonDisconnect">Déconnexion</string>
+    <string name="buttonManageAccount">Gérer compte</string>
+    <string name="title_activity_account">Compte</string>
+    <string name="title_activity_connection">Connexion</string>
+    <string name="textViewBluetoothDevices">Appareils Bluetooth</string>
+    <string name="editTextFirstname">Prénom</string>
+    <string name="editTextLastname">Nom</string>
+    <string name="toast_account_created">Compte crée</string>
+    <string name="toast_db_insert_error">Erreur insertion BD</string>
+    <string name="toast_error_login_password">Erreur login/mot de passe</string>
+    <string name="toast_connected_as">Connecté en tant que </string>
+    <string name="toast_account_updated">Compte mis à jour</string>
+    <string name="toast_update_error">Erreur de mise à jour</string>
+    <string name="toast_not_connected_yet">Pas encore connecté</string>
+    <string name="toast_disconnected">Deconnecté</string>
+    <string name="buttonSaveChanges">Sauvegarder</string>
 </resources>

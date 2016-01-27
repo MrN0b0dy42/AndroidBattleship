@@ -4,7 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
+
+import java.util.Collection;
 
 import fr.info.orleans.androidbattleship.activities.WifiActivity;
 
@@ -17,7 +22,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver  {
     private WifiP2pManager.Channel mChannel;
     private WifiActivity mActivity;
     private IntentFilter mIntentFilter = null;
-
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
                                        WifiActivity activity) {
@@ -35,6 +39,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver  {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 // Wifi P2P is enabled
+                onPeersChanged(intent);
             } else {
                 // Wi-Fi P2P is not enabled
             }
@@ -46,6 +51,23 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver  {
             // Respond to this device's wifi state changing
         }
     }
+
+
+    WifiP2pManager.PeerListListener myPeerListListener =
+            new WifiP2pManager.PeerListListener() {
+                @Override
+                public void onPeersAvailable(WifiP2pDeviceList peers) {
+                    Collection<WifiP2pDevice> wifiDevices = peers.getDeviceList();
+                    Integer size = new Integer(wifiDevices.size());
+                    Log.d("debug wifi direct","there are "+size.toString()+" wifi devices");
+                }
+            };
+
+
+    private void onPeersChanged(Intent intent) {
+        mManager.requestPeers(mChannel,myPeerListListener);
+    }
+
 
     public void registerReceiver(){
         mActivity.registerReceiver(this,getIntentFilter());

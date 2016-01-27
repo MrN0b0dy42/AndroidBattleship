@@ -30,6 +30,10 @@
     <string name="activity_settings_label">Settings</string>
     <string name="checkbox_music_text">Turn the music on</string>
     <string name="checkbox_ambiance_text">Turn the ambiance on</string>
+    <string name="buttonDisconnect">Disconnect</string>
+    <string name="buttonManageAccount">Manage account</string>
+    <string name="toast_not_connected_yet">Not connected yet</string>
+    <string name="toast_disconnected">Disconnected</string>
 
     <!-- ShipsArrangementActivity -->
     <string name="activity_shis_arrangement_label">Ships arrangement</string>
@@ -47,11 +51,11 @@
     <string name="button_player_vs_computer_text">Player versus computer</string>
     <string name="button_player_vs_player_text">Player versus player</string>
     <string name="button_settings_name">Settings</string>
-    <string name="title_activity_account">AccountActivity</string>
-    <string name="title_activity_sign_in">SignInActivity</string>
-    <string name="title_activity_bluetooth">BluetoothActivity</string>
-    <string name="title_activity_manage_account">ManageAccountActivity</string>
-    <string name="title_activity_connection">ConnectionActivity</string>
+    <string name="title_activity_account">Account</string>
+    <string name="title_activity_sign_in">Sign in</string>
+    <string name="title_activity_bluetooth">Bluetooth</string>
+    <string name="title_activity_manage_account">Manage account</string>
+    <string name="title_activity_connection">Connection</string>
     <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to login -->
@@ -67,4 +71,29 @@
         completions."
     </string>
     <string name="title_activity_wifi">WifiActivity</string>
+
+    <!-- AccountActivity -->
+    <string name="buttonSignIn">Sign in</string>
+    <string name="buttonSignUp">Sign up</string>
+    <string name="editTextPassword">Password</string>
+    <string name="editTextLogin">Login</string>
+    <string name="toast_error_login_password">Error login/password</string>
+    <string name="toast_connected_as">Connected as</string>
+
+
+    <!--BluetoothActivity -->
+    <string name="textViewBluetoothDevices">Bluetooth Devices</string>
+
+    <!--SignInActivity -->
+    <string name="editTextFirstname">Firstname</string>
+    <string name="editTextLastname">Lastname</string>
+    <string name="toast_account_created">Account created</string>
+    <string name="toast_db_insert_error">DB insert error</string>
+
+    <!--ManageAccountActivity -->
+    <string name="toast_account_updated">Account updated</string>
+    <string name="toast_update_error">Update error</string>
+    <string name="buttonSaveChanges">Save changes</string>
+
+
 </resources>

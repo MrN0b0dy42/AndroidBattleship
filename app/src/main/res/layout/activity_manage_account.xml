@@ -21,7 +21,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/editText_firstname"
-                android:hint="Firstname"
+                android:hint="@string/editTextFirstname"
                 android:textAlignment="center"/>
 
         <EditText
@@ -30,7 +30,7 @@
                 android:layout_weight="1"
                 android:id="@+id/editText_lastname"
                 android:maxLength="32"
-                android:hint="Lastname"
+                android:hint="@string/editTextLastname"
                 android:textAlignment="center"/>
 
         <EditText
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/editText_login"
-                android:hint="Login"
+                android:hint="@string/editTextLogin"
                 android:textAlignment="center"/>
 
         <EditText
@@ -47,7 +47,7 @@
                 android:layout_weight="1"
                 android:id="@+id/editText_password"
                 android:inputType="textPassword"
-                android:hint="Password"
+                android:hint="@string/editTextPassword"
                 android:textAlignment="center"/>
 
         <Button style="@style/ButtonTheme"
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/buttonSaveChanges"
-                android:text="Save changes"/>
+                android:text="@string/buttonSaveChanges"/>
 
     </TableLayout>
 

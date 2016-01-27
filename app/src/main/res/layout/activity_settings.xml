@@ -30,14 +30,14 @@
         <Button style="@style/ButtonTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Manage account"
+                android:text="@string/buttonManageAccount"
                 android:id="@+id/buttonManageAccount"
                 android:layout_gravity="center_horizontal"/>
 
         <Button style="@style/ButtonTheme"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Disconnect"
+                android:text="@string/buttonDisconnect"
                 android:id="@+id/buttonDisconnect"
                 android:layout_gravity="center_horizontal"/>
 

@@ -39,11 +39,11 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
                 db.getReadableDatabase();
                 players = db.selectPlayerByQuery("SELECT * FROM Player WHERE login = '" + editTextLogin.getText().toString() + "' AND PASSWORD = '" + editTextPassword.getText().toString() + "';");
                 if(players.isEmpty()){
-                    Toast.makeText(this, "Error login/password.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getText(R.string.toast_error_login_password), Toast.LENGTH_LONG).show();
                 }else{
                     intent = new Intent(this,ManageAccountActivity.class);
                     ((AndroidBattleship) this.getApplication()).setConnectedPlayer((Player) players.get(0));
-                    Toast.makeText(this, "Connected as " + ((Player) players.get(0)).getLogin(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getText(R.string.toast_connected_as) + ((Player) players.get(0)).getLogin(), Toast.LENGTH_LONG).show();
                     startActivity(intent);
 
 

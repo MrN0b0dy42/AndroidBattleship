@@ -19,20 +19,20 @@
         <EditText android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Login"
+            android:hint="@string/editTextLogin"
             android:textAlignment="center"
             android:id="@+id/editText_login"/>
         <EditText android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Password"
+            android:hint="@string/editTextPassword"
             android:inputType="textPassword"
             android:textAlignment="center"
             android:id="@+id/editText_password" />
 
         <Button style="@style/ButtonTheme"
             android:id="@+id/button_sign_up"
-            android:text="Sign up"
+            android:text="@string/buttonSignUp"
             android:layout_weight="1"/>
     </TableLayout>
 

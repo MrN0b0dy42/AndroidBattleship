@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -41,7 +40,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     protected static final int SUCCESS_CONNECT = 0;
     protected static final int MESSAGE_READ = 1;
-    private static final int REQUEST_PAIR_DEVICE = 1;
     private String EXTRA_DEVICE = "android.bluetooth.device.extra.DEVICE";
     IntentFilter filter;
     BroadcastReceiver receiver;
@@ -55,13 +53,14 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             int end = (int)msg.arg2;
 
             switch(msg.what){
-//                case SUCCESS_CONNECT:
-//                    // DO something
-//                    Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
-//                    String s = "successfully connected";
-//                    connectedThread.write(s.getBytes());
-//                    Log.i(tag, "connected");
-//                    break;
+                case SUCCESS_CONNECT:
+                    // DO something
+                    ConnectedThread connectedThread = new ConnectedThread((BluetoothSocket)msg.obj);
+                    Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
+                    String s = "successfully connected";
+                    connectedThread.write(s.getBytes());
+                    Log.i(tag, "connected");
+                    break;
                 case MESSAGE_READ:
 
 //                    byte[] readBuf = (byte[])msg.obj;
@@ -116,10 +115,10 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         listView= (ListView) findViewById(R.id.listViewBluetoothDevices);
         listView.setOnItemClickListener(this);
         listView.setOnItemLongClickListener(this);
-        listAdapter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
+        listAdapter= new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, 0);
         listView.setAdapter(listAdapter);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        pairedDevices = new ArrayList<String>();
+        pairedDevices = new ArrayList<>();
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         devices = new ArrayList<BluetoothDevice>();
         receiver = new BroadcastReceiver(){

@@ -47,11 +47,11 @@ public class ManageAccountActivity extends AppCompatActivity implements View.OnC
         db.getReadableDatabase();
         try{
             db.updatePlayer(connectedPlayer);
-            Toast.makeText(ManageAccountActivity.this, "Account updated", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ManageAccountActivity.this,getText(R.string.toast_account_updated), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this,SettingsActivity.class);
             startActivity(intent);
         }catch (Exception e){
-            Toast.makeText(ManageAccountActivity.this, "Update error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ManageAccountActivity.this, getText(R.string.toast_update_error), Toast.LENGTH_SHORT).show();
             e.getStackTrace();
         }
 

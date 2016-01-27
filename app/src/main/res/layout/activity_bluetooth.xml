@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Bluetooth devices"
+            android:text="@string/textViewBluetoothDevices"
             android:id="@+id/textViewBluetoothDevices"
             android:layout_column="5" />
 

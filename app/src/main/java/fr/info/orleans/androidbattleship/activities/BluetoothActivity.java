@@ -48,10 +48,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         @Override
         public void handleMessage(Message msg) {
             Log.i(tag, "in handler");
-            byte[] writeBuf = (byte[]) msg.obj;
-            int begin = (int)msg.arg1;
-            int end = (int)msg.arg2;
-
+            super.handleMessage(msg);
             switch(msg.what){
                 case SUCCESS_CONNECT:
                     // DO something
@@ -62,13 +59,9 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                     Log.i(tag, "connected");
                     break;
                 case MESSAGE_READ:
-
-//                    byte[] readBuf = (byte[])msg.obj;
-//                    String string = new String(readBuf);
-//                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
-//                    break;
-                    String writeMessage = new String(writeBuf);
-                    writeMessage = writeMessage.substring(begin, end);
+                    byte[] readBuf = (byte[])msg.obj;
+                    String string = new String(readBuf);
+                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -409,5 +402,12 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                 mmSocket.close();
             } catch (IOException e) { }
         }
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        btAdapter.cancelDiscovery();
+
     }
 }

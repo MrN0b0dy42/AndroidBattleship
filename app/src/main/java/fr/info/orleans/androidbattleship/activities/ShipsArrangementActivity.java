@@ -14,9 +14,14 @@ import android.widget.Toast;
 
 import fr.info.orleans.androidbattleship.R;
 import fr.info.orleans.androidbattleship.model.Grid;
+import fr.info.orleans.androidbattleship.model.ships.AircraftCarrier;
+import fr.info.orleans.androidbattleship.model.ships.Cruiser;
+import fr.info.orleans.androidbattleship.model.ships.Destroyer;
 import fr.info.orleans.androidbattleship.model.ships.Ship;
+import fr.info.orleans.androidbattleship.model.ships.Submarine;
+import fr.info.orleans.androidbattleship.model.ships.TorpedoBoat;
 
-public class ShipsArrangementActivity extends AppCompatActivity implements View.OnClickListener {
+public class ShipsArrangementActivity extends AppCompatActivity implements Runnable, View.OnClickListener {
 
     private static final int ASCII_CODE_A = 65;
     private static final int NB_AC = 1;
@@ -78,7 +83,7 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
         placementShipAutorized = new Grid[2][MAX_LENGTH_SHIP];
         initGridPlacementShipAutorized();
         playerGrid = new Grid();
-        playerGrid.arrangeShipsRandomly();
+        //playerGrid.arrangeShipsRandomly();
         drawGrid();
     }
 
@@ -88,26 +93,48 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
             case R.id.button_random_generation:
                 playerGrid.resetGrid();
                 playerGrid.arrangeShipsRandomly();
+                nb_ac = NB_AC;
+                nb_cr = NB_CR;
+                nb_de = NB_DE;
+                nb_su = NB_SU;
+                nb_to = NB_TO;
+                testButton();
                 updateGrid();
+                takeShip = false;
                 break;
             case R.id.button_suppression:
                 playerGrid.resetGrid();
                 updateGrid();
+                nb_ac = 0;
+                nb_cr = 0;
+                nb_de = 0;
+                nb_su = 0;
+                nb_to = 0;
+                testButton();
+                takeShip = false;
                 break;
             case R.id.button_play:
-                Intent intent = new Intent(this, GameActivity.class);
-                intent.putExtra("difficulty", difficulty);
-                intent.putExtra("playerGrid", playerGrid);
-                startActivity(intent);
+                if(nb_su + nb_to + nb_de + nb_ac + nb_cr ==
+                        NB_AC + NB_CR + NB_DE + NB_SU + NB_TO) {
+                    Intent intent = new Intent(this, GameActivity.class);
+                    intent.putExtra("difficulty", difficulty);
+                    intent.putExtra("playerGrid", playerGrid);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, getText(R.string.toast_no_play), Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.button_change_orientation:
                 changeOrientation.setText("Orientation : " + ((!HORIZONTAL) ? "HORIZONTAL" : "VERTICAL"));
                 HORIZONTAL = (!HORIZONTAL) ? true : false;
+                resetTarget();
+                if(takeShip && lengthShipTaken != -1) afficheTarget(lengthShipTaken, HORIZONTAL);
                 break;
             case R.id.button_ship5:
                 if(takeShip && lengthShipTaken == 5) {
                     takeShip = false;
                     lengthShipTaken = -1;
+                    resetTarget();
                     ship5.setBackgroundResource(R.drawable.blue_light);
                 } else {
                     if(nb_ac < NB_AC) {
@@ -125,6 +152,7 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
                 if(takeShip && lengthShipTaken == 4) {
                     takeShip = false;
                     lengthShipTaken = -1;
+                    resetTarget();
                     ship4.setBackgroundResource(R.drawable.blue_light);
                 } else {
                     if(nb_ac < NB_AC) {
@@ -142,6 +170,7 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
                 if(takeShip && lengthShipTaken == 3) {
                     takeShip = false;
                     lengthShipTaken = -1;
+                    resetTarget();
                     ship3_1.setBackgroundResource(R.drawable.blue_light);
                 } else {
                     if(nb_ac < NB_AC) {
@@ -156,14 +185,15 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
                 }
                 break;
             case R.id.button_ship3_2:
-                if(takeShip && lengthShipTaken == 3) {
+                if(takeShip && lengthShipTaken == 30) {
                     takeShip = false;
                     lengthShipTaken = -1;
+                    resetTarget();
                     ship3_2.setBackgroundResource(R.drawable.blue_light);
                 } else {
                     if(nb_ac < NB_AC) {
                         takeShip = true;
-                        lengthShipTaken = 3;
+                        lengthShipTaken = 30;
                         ship5.setBackgroundResource(R.drawable.blue_light);
                         ship4.setBackgroundResource(R.drawable.blue_light);
                         ship3_1.setBackgroundResource(R.drawable.blue_light);
@@ -176,6 +206,7 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
                 if(takeShip && lengthShipTaken == 2) {
                     takeShip = false;
                     lengthShipTaken = -1;
+                    resetTarget();
                     ship2.setBackgroundResource(R.drawable.blue_light);
                 } else {
                     if(nb_ac < NB_AC) {
@@ -190,6 +221,116 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
                 }
                 break;
         }
+        if(takeShip && lengthShipTaken != -1){
+            resetTarget();
+            afficheTarget(lengthShipTaken, HORIZONTAL);
+        }
+    }
+
+    @Override
+    public void run() {
+        if (takeShip) {
+            for (int i = 0; i < playerGrid.SIZE; i++) {
+                for(int j = 0; j < playerGrid.SIZE; j++){
+                    if (playerGrid.getCells()[i][j] == Grid.Cell.EMPTY) {
+                        final int finalI = i;
+                        final int finalJ = j;
+                        imageViews[i][j].setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (playerGrid.getCells()[finalI][finalJ] == Grid.Cell.EMPTY) {
+                                    Ship ship = addShip(finalI, finalJ, lengthShipTaken);
+                                    updateAllGrid(ship);
+                                    updateGrid();
+                                    updateShip(lengthShipTaken);
+                                    takeShip = false;
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateShip(int lengthShipTaken) {
+        switch(lengthShipTaken){
+            case 5:
+                nb_ac++;
+                break;
+            case 4:
+                nb_cr++;
+                break;
+            case 3:
+                nb_de++;
+                break;
+            case 30:
+                nb_su++;
+                break;
+            case 2:
+                nb_to++;
+                break;
+        }
+    }
+
+    private void testButton(){
+        ship5.setBackgroundResource((nb_ac == NB_AC) ? R.color.lightSteelBlue : R.drawable.blue_light);
+        ship4.setBackgroundResource((nb_cr == NB_CR) ? R.color.lightSteelBlue : R.drawable.blue_light);
+        ship3_1.setBackgroundResource((nb_de == NB_DE) ? R.color.lightSteelBlue : R.drawable.blue_light);
+        ship3_2.setBackgroundResource((nb_su == NB_SU) ? R.color.lightSteelBlue : R.drawable.blue_light);
+        ship2.setBackgroundResource((nb_to == NB_TO) ? R.color.lightSteelBlue : R.drawable.blue_light);
+
+    }
+
+    private void resetTarget() {
+        for (int i = 0; i < playerGrid.SIZE; i++) {
+            for(int j = 0; j < playerGrid.SIZE; j++){
+                if (playerGrid.getCells()[i][j] == Grid.Cell.EMPTY) {
+                    imageViews[i][j].setBackgroundResource(R.drawable.water);
+                }
+            }
+        }
+    }
+
+    private void afficheTarget(int lengthShipTaken, boolean horizontal) {
+        for (int i = 0; i < placementShipAutorized[0][0].SIZE; i++) {
+            for(int j = 0; j < placementShipAutorized[0][0].SIZE; j++){
+                if (placementShipAutorized[(horizontal) ? HORIZONTAL_PSA : VERTICAL_PSA]
+                        [(lengthShipTaken == 30) ? 2 : lengthShipTaken - 1].getCells()[i][j] == Grid.Cell.EMPTY) {
+                    imageViews[i][j].setBackgroundResource(R.drawable.target);
+                }
+            }
+        }
+    }
+
+    private Ship addShip(int Y, int X, int lengthShipTaken) {
+        Ship ship;
+        switch(lengthShipTaken){
+            case 5:
+                ship = new AircraftCarrier();
+                break;
+            case 4:
+                ship = new Cruiser();
+                break;
+            case 3:
+                ship = new Destroyer();
+                break;
+            case 30:
+                ship = new Submarine();
+                break;
+            case 2:
+                ship = new TorpedoBoat();
+                break;
+            default:
+                return null;
+        }
+        ship.setOrientation(HORIZONTAL);
+        for(int i = 0; i < ship.getLength(); i++){
+            ship.getCoordinates()[i].setX((HORIZONTAL) ? X + i : X);
+            ship.getCoordinates()[i].setY((HORIZONTAL) ? Y : Y + i);
+            //playerGrid.setCellAt(ship.getCoordinates()[i].getX(), ship.getCoordinates()[i].getY(), Grid.Cell.SHIP);
+        }
+        return ship;
     }
 
     private void allocImageViews() {
@@ -311,7 +452,7 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
         }
 
         //placement around
-        int[][] around = ship.getAround(ship.getCoordinates()[0].getX(), ship.getCoordinates()[1].getY(), LENGTH_BOARD);
+        int[][] around = ship.getAround(ship.getCoordinates()[0].getX(), ship.getCoordinates()[0].getY(),LENGTH_BOARD);
         for(int i = 0; i < around.length; i++){
             if(around[0][i] != -1 && around[1][i] != -1) {
                 playerGrid.setCellAt(around[HORIZONTAL_PSA][i], around[VERTICAL_PSA][i], Grid.Cell.MISS);
@@ -397,6 +538,4 @@ public class ShipsArrangementActivity extends AppCompatActivity implements View.
             }
         }
     }
-
-
 }

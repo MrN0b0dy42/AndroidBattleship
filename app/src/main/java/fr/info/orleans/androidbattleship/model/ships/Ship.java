@@ -27,6 +27,10 @@ public abstract class Ship implements Serializable {
         return orientation;
     }
 
+    public void setOrientation(boolean horizontal) {
+        orientation = (horizontal) ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+    }
+
     public Coordinate[] getCoordinates() {
         return coordinates;
     }

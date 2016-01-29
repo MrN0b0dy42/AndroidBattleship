@@ -47,6 +47,7 @@
     <string name="button_ship_2_text">Torpedo Boat</string>
     <string name="button_suppression_text">Erase</string>
     <string name="toast_drag_and_drop_text">Drag and drop not implemented.</string>
+    <string name="toast_no_play">All ship are\'nt on the board</string>
 
     <!-- SingleplayerMenuActivity -->
     <string name="activity_singleplayer_menu_label">Menu player versus computer</string>
@@ -101,6 +102,5 @@
     <string name="toast_account_updated">Account updated</string>
     <string name="toast_update_error">Update error</string>
     <string name="buttonSaveChanges">Save changes</string>
-
 
 </resources>

@@ -278,8 +278,8 @@
                                     }
                                 }
                                 imageViews[i][j].setSoundEffectsEnabled(false);
-                                onTouchListener(imageViews, i, j, grid);
-                                onClickListener(imageViews, i, j, grid);
+                                onTouchListener(imageViews, i, j, enemyGrid);
+                                onClickListener(imageViews, i, j, enemyGrid);
                             } else {
                                 switch (grid.getCells()[i][j]) {
                                     case EMPTY:

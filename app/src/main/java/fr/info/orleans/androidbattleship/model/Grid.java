@@ -11,20 +11,23 @@ import fr.info.orleans.androidbattleship.model.ships.Submarine;
 import fr.info.orleans.androidbattleship.model.ships.TorpedoBoat;
 
 import static fr.info.orleans.androidbattleship.model.Grid.Cell.EMPTY;
+import static fr.info.orleans.androidbattleship.model.Grid.Cell.OUT_OF_BONDS;
 import static fr.info.orleans.androidbattleship.model.Grid.Cell.SHIP;
+import static fr.info.orleans.androidbattleship.model.ships.Ship.Orientation.DIAGONAL;
 import static fr.info.orleans.androidbattleship.model.ships.Ship.Orientation.HORIZONTAL;
+import static fr.info.orleans.androidbattleship.model.ships.Ship.Orientation.VERTICAL;
 
 public class Grid implements Serializable {
 
     public static final int SIZE = 10;
-    public static final int NB_SHIPS = 7;
+    public static final int NB_SHIPS = 5;
     public static final int NB_AIRCRAFT_CARRIERS = 1;
-    public static final int NB_CRUISERS = 2;
+    public static final int NB_CRUISERS = 1;
     public static final int NB_DESTROYERS = 1;
     public static final int NB_SUBMARINES = 1;
-    public static final int NB_TORPEDO_BOATS = 2;
+    public static final int NB_TORPEDO_BOATS = 1;
 
-    public enum Cell { EMPTY, SHIP, MISS, HIT, DESTROY }
+    public enum Cell { EMPTY, SHIP, MISS, HIT, DESTROY, OUT_OF_BONDS }
 
     private Cell[][] cells;
     private Ship[] ships;
@@ -46,7 +49,10 @@ public class Grid implements Serializable {
         cells = new Cell[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
-                cells[i][j] = EMPTY;
+                if((i+j)<SIZE)
+                    cells[i][j] = EMPTY;
+                else
+                    cells[i][j] = OUT_OF_BONDS;
     }
 
     private void allocShips() {
@@ -77,7 +83,10 @@ public class Grid implements Serializable {
     public void resetGrid() {
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
-                cells[i][j] = EMPTY;
+                if((i+j)<SIZE)
+                    cells[i][j] = EMPTY;
+                else
+                    cells[i][j] = OUT_OF_BONDS;
     }
 
     public boolean isShipDestroyed(int x, int y) {
@@ -150,7 +159,10 @@ public class Grid implements Serializable {
         boolean[][] validCoordinates = new boolean[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++)
             for (int j = 0; j < SIZE; j++)
-                validCoordinates[i][j] = true;
+                if((i+j)< SIZE)
+                    validCoordinates[i][j] = true;
+                else
+                    validCoordinates[i][j] = false;
         for (int i = 0; i < NB_SHIPS; i++) {
             shipArranged = false;
             while (!shipArranged) {
@@ -176,7 +188,7 @@ public class Grid implements Serializable {
     }
 
     private boolean isValidCoordinate(int x, int y, boolean[][] validCoordinates) {
-        if (x < 0 || y < 0 || x >= SIZE || y >= SIZE)
+        if (x < 0 || y < 0 || (x+y) >= SIZE )
             return false;
         return validCoordinates[x][y];
     }
@@ -200,20 +212,42 @@ public class Grid implements Serializable {
                 y = ship.getCoordinates()[i].getY();
                 cells[x][y] = SHIP;
             }
-        } else {
-            for (int i = 1; i < ship.getLength(); i++) {
-                x = xHead + i;
-                y = yHead;
-                if (isValidCoordinate(x, y, validCoordinates)) {
-                    ship.getCoordinates()[i].setX(x);
-                    ship.getCoordinates()[i].setY(y);
-                } else
-                    return false;
+        }
+        else
+        {
+            if (ship.getOrientation() == VERTICAL)
+            {
+                for (int i = 1; i < ship.getLength(); i++) {
+                    x = xHead + i;
+                    y = yHead;
+                    if (isValidCoordinate(x, y, validCoordinates)) {
+                        ship.getCoordinates()[i].setX(x);
+                        ship.getCoordinates()[i].setY(y);
+                    } else
+                        return false;
+                }
+                for (int i = 0; i < ship.getLength(); i++) {
+                    x = ship.getCoordinates()[i].getX();
+                    y = ship.getCoordinates()[i].getY();
+                    cells[x][y] = SHIP;
+                }
             }
-            for (int i = 0; i < ship.getLength(); i++) {
-                x = ship.getCoordinates()[i].getX();
-                y = ship.getCoordinates()[i].getY();
-                cells[x][y] = SHIP;
+            else //DIAGONAL
+            {
+                for (int i = 1; i < ship.getLength(); i++) {
+                    x = xHead + i;
+                    y = yHead - i;
+                    if (isValidCoordinate(x, y, validCoordinates)) {
+                        ship.getCoordinates()[i].setX(x);
+                        ship.getCoordinates()[i].setY(y);
+                    } else
+                        return false;
+                }
+                for (int i = 0; i < ship.getLength(); i++) {
+                    x = ship.getCoordinates()[i].getX();
+                    y = ship.getCoordinates()[i].getY();
+                    cells[x][y] = SHIP;
+                }
             }
         }
         setInvalidCoordinates(ship, validCoordinates);
@@ -226,29 +260,52 @@ public class Grid implements Serializable {
             x = ship.getCoordinates()[i].getX();
             y = ship.getCoordinates()[i].getY();
             validCoordinates[x][y] = false;
-            if (ship.getOrientation() == HORIZONTAL) {
-                if (i == 0) {
-                    if (x - 1 >= 0 && y - 1 >= 0) validCoordinates[x - 1][y - 1] = false;
-                    if (x + 1 <= 9 && y - 1 >= 0) validCoordinates[x + 1][y - 1] = false;
+            if (ship.getOrientation() == DIAGONAL)
+            {
+                if(i == 0)
+                {
+                    if (x - 1 >= 0 && (x + y) <= (SIZE - 2)) validCoordinates[x - 1][y + 1] = false;
                 }
-                if (i == ship.getLength() - 1) {
-                    if (x - 1 >= 0 && y + 1 <= 9) validCoordinates[x-1][y + 1] = false;
-                    if (x + 1 <= 9 && y + 1 <= 9) validCoordinates[x+1][y + 1] = false;
+                if (i == ship.getLength() - 1)
+                {
+                    if ((x + y) <= (SIZE - 2) && y - 1 >= 0) validCoordinates[x + 1][y - 1] = false;
                 }
-            } else {
-                if (i == 0) {
-                    if (x - 1 >= 0 && y - 1 >= 0) validCoordinates[x - 1][y - 1] = false;
-                    if (x - 1 >= 0 && y + 1 <= 9) validCoordinates[x - 1][y + 1] = false;
-                }
-                if (i == ship.getLength() - 1) {
-                    if (x + 1 <= 9 && y - 1 >= 0) validCoordinates[x + 1][y - 1] = false;
-                    if (x + 1 <= 9 && y + 1 <= 9) validCoordinates[x + 1][y + 1] = false;
-                }
+                if (x - 1 >= 0 && y - 1 >= 0) validCoordinates[x - 1][y - 1] = false;
+                if ((x + y) <= (SIZE - 2)) validCoordinates[x + 1][y + 1] = false;
+                if (x - 1 >= 0) validCoordinates[x - 1][y] = false;
+                if ((x + y) <= (SIZE - 2)) validCoordinates[x + 1][y] = false;
+                if (y - 1 >= 0) validCoordinates[x][y - 1] = false;
+                if ((x + y) <= (SIZE - 2)) validCoordinates[x][y + 1] = false;
             }
-            if (x - 1 >= 0) validCoordinates[x - 1][y] = false;
-            if (x + 1 <= 9) validCoordinates[x + 1][y] = false;
-            if (y - 1 >= 0) validCoordinates[x][y - 1] = false;
-            if (y + 1 <= 9) validCoordinates[x][y + 1] = false;
+            else
+            {
+                if (ship.getOrientation() == HORIZONTAL) {
+                    if (i == 0) {
+                        if (x - 1 >= 0 && y - 1 >= 0) validCoordinates[x - 1][y - 1] = false;
+                        if ((x + y) <= (SIZE - 2) && y - 1 >= 0) validCoordinates[x + 1][y - 1] = false;
+                    }
+                    if (i == ship.getLength() - 1) {
+                        if (x - 1 >= 0 && (x + y) <= (SIZE - 2)) validCoordinates[x-1][y + 1] = false;
+                        if ((x + y) <= (SIZE - 2)) validCoordinates[x+1][y + 1] = false;
+                    }
+                }
+                else
+                {
+                    if (i == 0) {
+                        if (x - 1 >= 0 && y - 1 >= 0) validCoordinates[x - 1][y - 1] = false;
+                        if (x - 1 >= 0 && (x + y) <= (SIZE - 2)) validCoordinates[x - 1][y + 1] = false;
+                    }
+                    if (i == ship.getLength() - 1) {
+                        if ((x + y) <= (SIZE - 2) && y - 1 >= 0) validCoordinates[x + 1][y - 1] = false;
+                        if ((x + y) <= (SIZE - 2)) validCoordinates[x + 1][y + 1] = false;
+                    }
+               }
+                if (x - 1 >= 0) validCoordinates[x - 1][y] = false;
+                if ((x + y) <= (SIZE - 2)) validCoordinates[x + 1][y] = false;
+                if (y - 1 >= 0) validCoordinates[x][y - 1] = false;
+                if ((x + y) <= (SIZE - 2)) validCoordinates[x][y + 1] = false;
+
+            }
         }
     }
 

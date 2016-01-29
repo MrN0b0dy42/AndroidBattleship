@@ -109,11 +109,9 @@ public class Grid implements Serializable {
 
     private Ship getShipByCoordinate(int x, int y) {
         Ship ship;
-        System.out.println("nombre de bateau : " + NB_SHIPS + "\nx | y : " + x + " | " + y);
         for (int i = 0; i < NB_SHIPS; i++) {
             ship = ships[i];
             for (int j = 0; j < ship.getLength(); j++) {
-                //System.out.println("bateau n°" + i + " morecau n°" + j + " x | y : " + x + " | " + y);
                 if (ship.getCoordinates()[j].getX() == x && ship.getCoordinates()[j].getY() == y)
                     return ship;
             }
@@ -124,7 +122,6 @@ public class Grid implements Serializable {
     public int[][] shipFlow(int x, int y) {
         Ship ship = getShipByCoordinate(x, y);
         if(ship == null){
-            System.out.println("Envoie d'un null : " + x + " | " + y);
             return null;
         }
         int[][] coordShip = new int[2][ship.getLength()];

@@ -26,6 +26,9 @@
     import fr.info.orleans.androidbattleship.model.Coordinate;
     import fr.info.orleans.androidbattleship.model.Grid;
     import fr.info.orleans.androidbattleship.InternalStorageManager;
+    import fr.info.orleans.androidbattleship.model.computer_ia.IA;
+    import fr.info.orleans.androidbattleship.model.computer_ia.IADifficile;
+    import fr.info.orleans.androidbattleship.model.computer_ia.IAFacile;
 
     public class GameActivity extends AppCompatActivity implements Runnable, View.OnClickListener {
 
@@ -50,9 +53,8 @@
         public static final String KEY_PLAYER_GRID = "PLAYER_GRID";
         public static final String KEY_ENEMY_GRID = "ENEMY_GRID";
         public static final String KEY_DIFFICULTY = "DIFFICULTY";
-
-        //test si convaicant
-        public boolean TEST = true;
+        public static final String IA_EASY = "easy";
+        public static final String IA_HARD = "hard";
 
 
         private String difficulty;
@@ -61,13 +63,9 @@
         private Button buttonSave;
         private ImageView[][] imageViewsPlayer, imageViewsEnemy;
         private Grid playerGrid, enemyGrid;
+        private IA computer;
         private ArrayList<MediaPlayer> mediaPlayers;
         private boolean playerTurn, gameOver, gameLoaded;
-
-        private ArrayList<Coordinate>  grid2,grid3,grid4,grid5, hunt;
-        private ArrayList<Integer> remainingBoat;
-        private int state, changeState;
-        private boolean initOk;
 
 
         @Override
@@ -75,6 +73,13 @@
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_game);
             difficulty = getIntent().getExtras().getString("difficulty");
+            if(difficulty.equals(IA_EASY))
+                computer = new IAFacile();
+            else if(difficulty.equals(IA_HARD))
+                computer = new IADifficile();
+            else
+                System.out.println("erreur difficulté");
+
             if (getIntent().getExtras().get("loadGame") != null) {
                 gameLoaded = true;
                 try {
@@ -105,7 +110,6 @@
             playSound(SOUND_INDEX_START);
             playerTurn = true;
             gameOver = false;
-            initOk=false;
             new Thread(this).start();
         }
 
@@ -145,7 +149,7 @@
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        computerPlay(difficulty);
+                        computerPlay();
                         if (playerGrid.allShipsAreDestroyed()) {
                             gameOver = true;
                             playSound(SOUND_INDEX_LOSE);
@@ -273,8 +277,6 @@
                                     }
                                 }
                                 imageViews[i][j].setSoundEffectsEnabled(false);
-                                final int finalI = i;
-                                final int finalJ = j;
                                 onTouchListener(imageViews, i, j, grid);
                                 onClickListener(imageViews, i, j, grid);
                             } else {
@@ -305,55 +307,248 @@
         private void onTouchListener(final ImageView[][] imageViews, int i, int j, final Grid grid){
             final int finalI = i;
             final int finalJ = j;
-
             imageViews[i][j].setOnTouchListener(new View.OnTouchListener() {
                 int fI = finalI;
                 int fJ = finalJ;
                 int[][] cellCross;
+                float[] coordsCurrent = new float[2];
+
+                boolean xTravelM = false;
+                boolean xTravelP = false;
+                boolean yTravelM = false;
+                boolean yTravelP = false;
+
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     if (playerTurn && !gameOver) {
                         Grid.Cell cell = grid.getCells()[finalI][finalJ];
                         if (cell == Grid.Cell.EMPTY || cell == Grid.Cell.SHIP) {
-                            System.out.println(event);
                             cellCross = touchCross(fI, fJ);
                             switch (event.getAction()) {
                                 case MotionEvent.ACTION_DOWN:
                                     for (int k = 0; k < cellCross[0].length; k++) {
-                                        if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                        if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
                                                 grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
                                             imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target);
-                                        }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
                                             imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_miss);
-                                        }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
                                             imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_hit);
-                                        }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
                                             imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_destroy);
                                         }
                                     }
+                                    coordsCurrent[0] = event.getX();
+                                    coordsCurrent[1] = event.getY();
+
                                     break;
-                                case MotionEvent.ACTION_UP:
-                                    for (int k = 0; k < cellCross[0].length; k++) {
-                                        if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
-                                                grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
-                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+
+                                case MotionEvent.ACTION_MOVE:
+                                    if (fJ == 0 && event.getX() < coordsCurrent[0]) {
+                                        float diff = genereDiff(event.getX() % xtarget, HORIZONTAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[0] % xtarget, HORIZONTAL);
+                                        if (diff < diffCurrent) {
+                                            coordsCurrent[0] = event.getX();
                                         }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
-                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                    } else if (fJ > 0 && event.getX() < coordsCurrent[0]) {
+                                        float diff = genereDiff(event.getX() % xtarget, HORIZONTAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[0] % xtarget, HORIZONTAL);
+                                        if (diff < diffCurrent) {
+                                            xTravelM = true;
+                                            xTravelP = false;
+                                        } else {
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                                }
+                                            }
+                                            if (xTravelM) {
+                                                fJ--;
+                                                xTravelM = false;
+                                                xTravelP = false;
+                                            }
+                                            cellCross = touchCross(fI, fJ);
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_destroy);
+                                                }
+                                            }
                                         }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
-                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                        coordsCurrent[0] = event.getX();
+                                    } else if (fJ < LENGTH_BOARD - 1 && event.getX() > coordsCurrent[0]) {
+                                        float diff = genereDiff(event.getX() % xtarget, HORIZONTAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[0] % xtarget, HORIZONTAL);
+                                        if (diff > diffCurrent) {
+                                            xTravelP = true;
+                                            xTravelM = false;
+                                        } else {
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                                }
+                                            }
+                                            if (xTravelP) {
+                                                fJ++;
+                                                xTravelM = false;
+                                                xTravelM = false;
+                                            }
+                                            cellCross = touchCross(fI, fJ);
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_destroy);
+                                                }
+                                            }
                                         }
-                                        else if(grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
-                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                        coordsCurrent[0] = event.getX();
+                                    } else if (fJ == LENGTH_BOARD - 1 && event.getX() > coordsCurrent[0]) {
+                                        float diff = genereDiff(event.getX() % xtarget, HORIZONTAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[0] % xtarget, HORIZONTAL);
+                                        if (diff > diffCurrent) {
+                                            coordsCurrent[0] = event.getX();
+                                        }
+                                    }
+
+
+                                    if (fI == 0 && event.getY() < coordsCurrent[1]) {
+                                        float diff = genereDiff(event.getY() % ytarget, VERTICAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[1] % ytarget, VERTICAL);
+                                        if (diff < diffCurrent) {
+                                            coordsCurrent[1] = event.getY();
+                                        }
+                                    } else if (fI > 0 && event.getY() < coordsCurrent[1]) {
+                                        float diff = genereDiff(event.getY() % ytarget, VERTICAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[1] % ytarget, VERTICAL);
+                                        if (diff < diffCurrent) {
+                                            yTravelM = true;
+                                            yTravelP = false;
+                                        } else {
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                                }
+                                            }
+                                            if (yTravelM) {
+                                                fI--;
+                                                yTravelM = false;
+                                                yTravelP = false;
+                                            }
+                                            cellCross = touchCross(fI, fJ);
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_destroy);
+                                                }
+                                            }
+                                        }
+                                        coordsCurrent[1] = event.getY();
+                                    } else if (fI < LENGTH_BOARD - 1 && event.getY() > coordsCurrent[1]) {
+                                        float diff = genereDiff(event.getY() % ytarget, VERTICAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[1] % ytarget, VERTICAL);
+                                        if (diff > diffCurrent) {
+                                            yTravelP = true;
+                                            yTravelM = false;
+                                        } else {
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                                }
+                                            }
+                                            if (yTravelP) {
+                                                fI++;
+                                                yTravelM = false;
+                                                yTravelM = false;
+                                            }
+                                            cellCross = touchCross(fI, fJ);
+                                            for (int k = 0; k < cellCross[0].length; k++) {
+                                                if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                        grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_miss);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_hit);
+                                                } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                                    imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.target_destroy);
+                                                }
+                                            }
+                                        }
+                                        coordsCurrent[1] = event.getY();
+                                    } else if (fI == LENGTH_BOARD - 1 && event.getY() > coordsCurrent[1]) {
+                                        float diff = genereDiff(event.getY() % ytarget, VERTICAL);
+                                        float diffCurrent = genereDiff(coordsCurrent[1] % ytarget, VERTICAL);
+                                        if (diff > diffCurrent) {
+                                            coordsCurrent[1] = event.getY();
                                         }
                                     }
                                     break;
-                            }
-                        }
+
+                                case MotionEvent.ACTION_UP:
+                                    for (int k = 0; k < cellCross[0].length; k++) {
+                                        if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.EMPTY ||
+                                                grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.SHIP) {
+                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.water);
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.MISS) {
+                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.miss);
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.HIT) {
+                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.hit);
+                                        } else if (grid.getCells()[cellCross[0][k]][cellCross[1][k]] == Grid.Cell.DESTROY) {
+                                            imageViews[cellCross[0][k]][cellCross[1][k]].setBackgroundResource(R.drawable.destroy);
+                                        }
+                                    }
+                                    if (grid.getCells()[fI][fJ] == Grid.Cell.EMPTY || grid.getCells()[fI][fJ] == Grid.Cell.SHIP) {
+                                        modifGrille(imageViews, fI, fJ, grid);
+                                    }
+                                    return true;
+                            }//end switch
+                        }//end cell empty/ship
                     }
                     return false;
                 }
@@ -399,36 +594,40 @@
                 @Override
                 public void onClick(View v) {
                     if (playerTurn && !gameOver) {
-                        Grid.Cell cell = grid.getCells()[finalI][finalJ];
-                        switch (cell) {
-                            case EMPTY:
-                                playerTurn = false;
-                                imageViews[finalI][finalJ].setBackgroundResource(R.drawable.miss);
-                                imageViews[finalI][finalJ].setTag(R.drawable.miss);
-                                grid.setCellAt(finalI, finalJ, Grid.Cell.MISS);
-                                playSound(SOUND_INDEX_MISS);
-                                break;
-                            case SHIP:
-                                imageViews[finalI][finalJ].setBackgroundResource(R.drawable.hit);
-                                imageViews[finalI][finalJ].setTag(R.drawable.hit);
-                                grid.setCellAt(finalI, finalJ, Grid.Cell.HIT);
-                                if (enemyGrid.isShipDestroyed(finalI, finalJ)){
-                                    playSound(SOUND_INDEX_DESTROY);
-                                    changeShipFlowHuman(imageViews, grid, finalI, finalJ);
-
-                                    if(TEST && !gameOver) {
-                                        changeAroundShipFlowHuman(imageViews, grid, finalI, finalJ, 10);
-                                    }
-                                }
-                                else
-                                    playSound(SOUND_INDEX_HIT);
-                                break;
-                            default:
-                                return;
-                        }
+                        modifGrille(imageViews, finalI, finalJ, grid);
                     }
                 }
             });
+        }
+
+        private void modifGrille(ImageView[][] imageViews, final int finalI, final int finalJ, Grid grid) {
+            Grid.Cell cell = grid.getCells()[finalI][finalJ];
+            switch (cell) {
+                case EMPTY:
+                    playerTurn = false;
+                    imageViews[finalI][finalJ].setBackgroundResource(R.drawable.miss);
+                    imageViews[finalI][finalJ].setTag(R.drawable.miss);
+                    grid.setCellAt(finalI, finalJ, Grid.Cell.MISS);
+                    playSound(SOUND_INDEX_MISS);
+                    break;
+                case SHIP:
+                    imageViews[finalI][finalJ].setBackgroundResource(R.drawable.hit);
+                    imageViews[finalI][finalJ].setTag(R.drawable.hit);
+                    grid.setCellAt(finalI, finalJ, Grid.Cell.HIT);
+                    if (enemyGrid.isShipDestroyed(finalI, finalJ)){
+                        playSound(SOUND_INDEX_DESTROY);
+                        changeShipFlowHuman(imageViews, grid, finalI, finalJ);
+
+                        if(difficulty.equals(IA_EASY) && !gameOver) {
+                            changeAroundShipFlowHuman(imageViews, grid, finalI, finalJ, 10);
+                        }
+                    }
+                    else
+                        playSound(SOUND_INDEX_HIT);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void changeShipFlowHuman(View[][] imageViews, Grid grid, int x, int y) {
@@ -440,8 +639,6 @@
                     grid.setCellAt(shipFlow[0][sf], shipFlow[1][sf], Grid.Cell.DESTROY);
                 }
             }
-            else
-                System.out.println("NULL CSFH");
         }
 
         private void changeShipFlowComputer(int x, int y) {
@@ -453,18 +650,14 @@
                     enemyGrid.setCellAt(shipFlow[0][sf], shipFlow[1][sf], Grid.Cell.DESTROY);
                 }
             }
-            else
-                System.out.println("NULL CSFC");
         }
 
         private void changeAroundShipFlowHuman(View[][] imageViews, Grid grid, int x, int y, int gridLength){
             int[][] shipFlowAround = enemyGrid.shipFlowAround(x, y, gridLength);
             if(shipFlowAround != null) {
                 for (int sfa = 0; sfa < shipFlowAround[0].length; sfa++) {
-                    System.out.println("ATTENTION sfa " + sfa + " -> "  + shipFlowAround[0][sfa] + " | " + shipFlowAround[1][sfa]);
                     if (shipFlowAround[0][sfa] != -1 && shipFlowAround[1][sfa] != -1) {
                         Grid.Cell cellTest = grid.getCells()[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]];
-                        System.out.println("celltest : " + cellTest);
                         switch (cellTest) {
                             case EMPTY:
                                 imageViews[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]].setBackgroundResource(R.drawable.miss);
@@ -476,19 +669,14 @@
                     }
                 }
             }
-            else
-                System.out.println("NULL CASFH");
-            //musique du miss ? Il faudrait d'abord finir l'autre de la destruction... mais est ce utile ? (de mettre miss)
         }
 
         private void changeAroundShipFlowComputer(int x, int y, int gridLength){
             int[][] shipFlowAround = playerGrid.shipFlowAround(x, y, gridLength);
             if(shipFlowAround != null) {
                 for (int sfa = 0; sfa < shipFlowAround[0].length; sfa++) {
-                    System.out.println("ATTENTION sfa " + sfa + " -> "  + shipFlowAround[0][sfa] + " | " + shipFlowAround[1][sfa]);
-                    if (shipFlowAround[0][sfa] != -1 && shipFlowAround[1][sfa] != -1) {
+                     if (shipFlowAround[0][sfa] != -1 && shipFlowAround[1][sfa] != -1) {
                         Grid.Cell cellTest = playerGrid.getCells()[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]];
-                        System.out.println("celltest : " + cellTest);
                         switch (cellTest) {
                             case EMPTY:
                                 imageViewsPlayer[shipFlowAround[0][sfa]][shipFlowAround[1][sfa]].setBackgroundResource(R.drawable.miss);
@@ -500,9 +688,6 @@
                     }
                 }
             }
-            else
-                System.out.println("NULL CASFC");
-            //musique du miss ? Il faudrait d'abord finir l'autre de la destruction... mais est ce utile ? (de mettre miss)
         }
 
         private String getLetter(int i) {
@@ -534,360 +719,35 @@
             mediaPlayers.get(index).start();
         }
 
-        private void computerPlay(String difficulty) {
-            if (difficulty.equals("easy")) {
-                int x, y;
-                do {
-                    x = generateRandomDigit();
-                    y = generateRandomDigit();
-                } while (!notYetShot(x, y));
-                Grid.Cell cell = playerGrid.getCells()[x][y];
-                final int idRes;
-                if (cell == Grid.Cell.EMPTY) {
-                    idRes = R.drawable.miss;
-                    playerGrid.setCellAt(x, y, Grid.Cell.MISS);
-                    playerTurn = true;
-                } else {
-                    idRes = R.drawable.hit;
-                    playerGrid.setCellAt(x, y, Grid.Cell.HIT);
-                    if (playerGrid.isShipDestroyed(x, y)) {
+        private void computerPlay() {
+            int[] coords = computer.computePlay(playerGrid);
+            final int finalX = coords[0];
+            final int finalY = coords[1];
+            final int idRes  = coords[2];
+            if(playerGrid.getCells()[finalX][finalY] == Grid.Cell.MISS)
+                playerTurn = true;
 
-                    }
-                }
-                final int finalX = x;
-                final int finalY = y;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageViewsPlayer[finalX][finalY].setBackgroundResource(idRes);
-                        imageViewsPlayer[finalX][finalY].setTag(idRes);
-                        switch (idRes) {
-                            case R.drawable.miss:
-                                playSound(SOUND_INDEX_MISS);
-                                break;
-                            case R.drawable.hit:
-                                if (playerGrid.isShipDestroyed(finalX, finalY)){
-                                    changeShipFlowComputer(finalX, finalY);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    imageViewsPlayer[finalX][finalY].setBackgroundResource(idRes);
+                    imageViewsPlayer[finalX][finalY].setTag(idRes);
+                    switch (idRes) {
+                        case R.drawable.miss:
+                            playSound(SOUND_INDEX_MISS);
+                            break;
+                        case R.drawable.hit:
+                            if (playerGrid.isShipDestroyed(finalX, finalY)){
+                                changeShipFlowComputer(finalX, finalY);
+                                if(difficulty.equals(IA_EASY))
                                     changeAroundShipFlowComputer(finalX, finalY, 10);
-                                    playSound(SOUND_INDEX_DESTROY);
-                                }
-                                else
-                                    playSound(SOUND_INDEX_HIT);
-                                break;
-                        }
-                    }
-                });
-            }
-            else if (difficulty.equals("hard")){
-                if(!initOk) {
-                    initIAHard();
-                }
-                ArrayList<Coordinate> gridCurrent;
-                changeStatus();
-                gridCurrent=selectGrid(this.state);
-                int x;
-                int y;
-                Coordinate currentCoord=new Coordinate();
-                do {
-                switch (this.hunt.size()) {
-                    case 0:
-                        currentCoord = randomCase(gridCurrent);
-                        break;
-                    case 1:
-                        currentCoord= selectCase(this.hunt.get(0));
-                        break;
-                    case 2:case 3: case 4:
-                        currentCoord=selectSpecificCase();
-                        if(changeState!=0){
-                            changeState--;
-                        }
-                        break;
-                }
-                x = currentCoord.getX();
-                y = currentCoord.getY();
-                } while (!notYetShot(x, y));
-                removeOne(currentCoord);
-
-                Grid.Cell cell = playerGrid.getCells()[x][y];
-                final int idRes;
-
-                if (cell == Grid.Cell.EMPTY) {
-                    idRes = R.drawable.miss;
-                    playerGrid.setCellAt(x, y, Grid.Cell.MISS);
-                    if(this.hunt.size()>1){
-                        changeState=2;
-                    }
-                    playerTurn = true;
-                } else {
-                    idRes = R.drawable.hit;
-                    this.hunt.add(currentCoord);
-                    playerGrid.setCellAt(x, y, Grid.Cell.HIT);
-                    if (playerGrid.isShipDestroyed(x, y)){
-                        ArrayList<Integer> delete= minmax(hunt);
-                        removeMany(delete.get(0),delete.get(1),delete.get(2),delete.get(3));
-                        changeRemainingBoat(this.hunt);
-                        changeState=0;
-                        this.hunt=new ArrayList();
+                                playSound(SOUND_INDEX_DESTROY);
+                            }
+                            else
+                                playSound(SOUND_INDEX_HIT);
+                            break;
                     }
                 }
-                final int finalX = x;
-                final int finalY = y;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageViewsPlayer[finalX][finalY].setBackgroundResource(idRes);
-                        imageViewsPlayer[finalX][finalY].setTag(idRes);
-                        switch (idRes) {
-                            case R.drawable.miss:
-                                playSound(SOUND_INDEX_MISS);
-                                break;
-                            case R.drawable.hit:
-                                if (playerGrid.isShipDestroyed(finalX, finalY)) {
-                                    changeShipFlowComputer(finalX, finalY);
-                                    changeAroundShipFlowComputer(finalX, finalY, 10);
-                                    playSound(SOUND_INDEX_DESTROY);
-                                }
-                                else
-                                    playSound(SOUND_INDEX_HIT);
-                                break;
-                        }
-                    }
-                });
-
-            }
-
-        }
-
-        private boolean notYetShot(int x, int y) {
-            Grid.Cell cell = playerGrid.getCells()[x][y];
-            if (cell == Grid.Cell.HIT || cell == Grid.Cell.MISS)
-                return false;
-            return true;
-        }
-
-        private int generateRandomDigit() {
-            return new Random().nextInt(Grid.SIZE);
-        }
-
-        private void initIAHard(){
-            grid2=new ArrayList<>();
-            grid3=new ArrayList<>();
-            grid4=new ArrayList<>();
-            grid5=new ArrayList<>();
-
-            for(int i=0; i<Grid.SIZE;i++){
-                    for(int j=0; j<Grid.SIZE; j++){
-                        if ((i+j)%2==1){
-                            Coordinate c = new Coordinate(i,j);
-                            grid2.add(c);
-                        }
-                        if ((i+j)%3==1){
-                            Coordinate c = new Coordinate(i,j);
-                            grid3.add(c);
-                        }
-                        if ((i+j)%4==1) {
-                            Coordinate c = new Coordinate(i, j);
-                            grid4.add(c);
-                        }
-                        if ((i+j)%5==1){
-                            Coordinate c = new Coordinate(i,j);
-                            grid5.add(c);
-                        }
-
-                    }
-            }
-            this.hunt=new ArrayList();
-            this.state=2;
-            this.remainingBoat=new ArrayList();
-            initRemainingBoat();
-            this.changeState = 0;
-            initOk=true;
-
-        }
-
-        private Coordinate randomCase(ArrayList<Coordinate> coord){
-            int size = coord.size();
-            Random r = new Random();
-            int i = (r.nextInt(size));
-            return coord.get(i);
-        }
-
-        private void initRemainingBoat(){
-            for(int i=0;i<4;i++){
-                if(i==3){
-                    this.remainingBoat.add(1);
-                }
-                else this.remainingBoat.add(2);
-            }
-
-        }
-
-        private void removeOne(Coordinate c){
-            if(this.grid2.contains(c)){
-                grid2.remove(c);
-            }
-            if(this.grid3.contains(c)){
-                grid3.remove(c);
-            }
-            if(this.grid4.contains(c)){
-                grid4.remove(c);
-            }
-            if(this.grid5.contains(c)){
-                grid5.remove(c);
-            }
-        }
-
-        private ArrayList<Integer> minmax (ArrayList<Coordinate> List){
-            int minx=10;
-            int maxx=-1;
-            int miny = 10;
-            int maxy=-1;
-            ArrayList<Integer> sol = new ArrayList();
-            for(int i=0; i<List.size();i++){
-                Coordinate c = List.get(i);
-                if (c.getX()<minx){
-                    minx=c.getX();
-                }
-                if (c.getX()>maxx){
-                    maxx=c.getX();
-                }
-                if (c.getY()<miny){
-                    miny=c.getY();
-                }
-                if (c.getY()<maxy){
-                    maxy=c.getY();
-                }
-            }
-            sol.add(minx);
-            sol.add(maxx);
-            sol.add(miny);
-            sol.add(maxy);
-            return sol;
-        }
-
-        private void removeMany(int mini, int maxi, int minj, int maxj){
-            if(mini==maxi){
-                for(int i=mini-1 ;i<maxi+2;i++){
-                    for(int j= minj-1; j<maxj+2; j++){
-                        Coordinate c = new Coordinate(i,j);
-                        removeOne(c);
-                    }
-                }
-            }
-        }
-
-        private int difference(int x1,int x2){
-             return x2-x1;
-        }
-
-        public void changeStatus(){
-            boolean stop=false;
-            int i=0;
-            while(!stop){
-                if(remainingBoat.get(i).equals(0)){
-                    i++;
-                }else stop=true;
-            }
-            this.state=i+2;
-        }
-
-        public void changeRemainingBoat(ArrayList<Coordinate> array){
-            int x = array.size();
-            this.remainingBoat.set(x-2,this.remainingBoat.get(x-2)-1);
-            this.hunt=new ArrayList();
-        }
-
-        private ArrayList<Coordinate> selectGrid(int state){
-            switch (state) {
-                case 2:
-                    return grid2;
-                case 3:
-                    return grid3;
-                case 4:
-                    return grid4;
-                case 5:
-                    return grid5;
-                default:
-                    return grid2;
-            }
-        }
-
-        private Coordinate selectCase(Coordinate c) {
-            Coordinate newCoord = new Coordinate();
-            ArrayList<Integer> possibility = new ArrayList();
-            if (c.getY()+1<Grid.SIZE && notYetShot(c.getX(), c.getY()+1)) {
-                if(c.getY()<10){
-                    possibility.add(0);
-                }
-            }
-            if (c.getX()+1<Grid.SIZE && notYetShot(c.getX()+1, c.getY())) {
-                if(c.getX()<10) {
-                    possibility.add(1);
-                }
-            }
-            if (c.getY()-1>=0 && notYetShot(c.getX(), c.getY()-1)) {
-                if(c.getY()>=0) {
-                    possibility.add(2);
-                }
-            }
-            if (c.getX()-1>=0 && notYetShot(c.getX()-1, c.getY())) {
-                if(c.getX()>=0) {
-                    possibility.add(3);
-                }
-            }
-            Random r = new Random();
-            int i = (r.nextInt(possibility.size()));
-            int x = possibility.get(i);
-            switch(x) {
-                case 0:
-                    newCoord = new Coordinate(c.getX(), c.getY()+1);
-                    break;
-                case 1:
-                    newCoord = new Coordinate(c.getX()+1, c.getY());
-                    break;
-                case 2:
-                    newCoord = new Coordinate(c.getX(), c.getY()-1);
-                    break;
-                case 3:
-                    newCoord = new Coordinate(c.getX()-1, c.getY());
-                    break;
-            }
-            return newCoord;
-        }
-
-        private Coordinate selectSpecificCase(){
-            Coordinate c=new Coordinate();
-            if(changeState==0){
-                int x=difference(this.hunt.get(hunt.size() - 2).getX(), this.hunt.get(hunt.size() - 1).getX());
-                int y=difference(this.hunt.get(hunt.size()-2).getY(),this.hunt.get(hunt.size()-1).getY());
-                c= new Coordinate(this.hunt.get(hunt.size() - 1).getX()+x,this.hunt.get(hunt.size()-1).getY()+y);
-                if(c.getX()<0 || c.getX()>9){
-                    changeState=2;
-                    return selectSpecificCase();
-                }
-                else if(c.getY()<0 || c.getY()>9){
-                    changeState=2;
-                    return selectSpecificCase();
-                }
-                else if(!notYetShot(c.getX(), c.getY())){
-                    changeState=2;
-                    return selectSpecificCase();
-                }
-            }
-            else if(changeState==1){
-                int x=difference(this.hunt.get(hunt.size()-1).getX(), this.hunt.get(0).getX());
-                int y = difference(this.hunt.get(hunt.size() - 1).getY(), this.hunt.get(0).getY());
-                c= new Coordinate(this.hunt.get(hunt.size()-1).getX()-x,this.hunt.get(hunt.size()-1).getY()-y);
-                if(!notYetShot(c.getX(), c.getY())){
-                    changeState=2;
-                }
-            }
-            else if(changeState==2){
-                int x=difference(this.hunt.get(0).getX(), this.hunt.get(1).getX());
-                int y=difference(this.hunt.get(0).getY(),this.hunt.get(1).getY());
-                c= new Coordinate(this.hunt.get(0).getX()-x,this.hunt.get(0).getY()-y);
-
-            }
-            return c;
+            });
         }
     }

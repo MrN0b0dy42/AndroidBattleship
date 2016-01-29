@@ -16,6 +16,13 @@
     <string name="button_hard_text">Difficile</string>
     <string name="button_random_generation_text">Génération aléatoire</string>
     <string name="button_play_text">Jouer</string>
+    <string name="button_change_orientation_text">Orientation : </string>
+    <string name="button_ship_5_text">Porte Avion</string>
+    <string name="button_ship_4_text">Croiseur</string>
+    <string name="button_ship_3_1_text">Contre-Torpilleur</string>
+    <string name="button_ship_3_2_text">Sous Marin</string>
+    <string name="button_ship_2_text">Torpilleur</string>
+    <string name="button_suppression_text">Suppression</string>
     <string name="toast_drag_and_drop_text">Glisser-déposer non implémenté.</string>
     <string name="textview_enemy_grid_text">Grille de l\'adversaire</string>
     <string name="textview_player_grid_text">Votre grille</string>

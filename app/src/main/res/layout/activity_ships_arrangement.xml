@@ -21,17 +21,68 @@
         android:rowCount="11"
         android:columnCount="11">
     </GridLayout>
+
     <TableLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="0.35"
         android:gravity="center">
         <Button style="@style/ButtonTheme"
+            android:id="@+id/button_change_orientation"
+            android:text="@string/button_change_orientation_text" />
+        <LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_ship5"
+                android:text="@string/button_ship_5_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_ship4"
+                android:text="@string/button_ship_4_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+        </LinearLayout>
+        <LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_ship3_1"
+                android:text="@string/button_ship_3_1_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_ship3_2"
+                android:text="@string/button_ship_3_2_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+        </LinearLayout>
+        <LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_ship2"
+                android:text="@string/button_ship_2_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+            <Button style="@style/ButtonTheme"
+                android:id="@+id/button_suppression"
+                android:text="@string/button_suppression_text"
+                android:layout_width="wrap_content"
+                android:layout_weight="1.0"/>
+        </LinearLayout>
+        <LinearLayout>
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        <Button style="@style/ButtonTheme"
             android:id="@+id/button_random_generation"
-            android:text="@string/button_random_generation_text" />
+            android:text="@string/button_random_generation_text"
+            android:layout_weight="1.0"/>
         <Button style="@style/ButtonTheme"
             android:id="@+id/button_play"
-            android:text="@string/button_play_text"/>
+            android:text="@string/button_play_text"
+            android:layout_weight="1.0"/>
+    </LinearLayout>
     </TableLayout>
-
 </LinearLayout>

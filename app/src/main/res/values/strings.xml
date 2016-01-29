@@ -39,6 +39,13 @@
     <string name="activity_shis_arrangement_label">Ships arrangement</string>
     <string name="button_random_generation_text">Random generation</string>
     <string name="button_play_text">Play</string>
+    <string name="button_change_orientation_text">Orientation : </string>
+    <string name="button_ship_5_text">Aircraft Carrier</string>
+    <string name="button_ship_4_text">Cruiser</string>
+    <string name="button_ship_3_1_text">Destroyer</string>
+    <string name="button_ship_3_2_text">Submarine</string>
+    <string name="button_ship_2_text">Torpedo Boat</string>
+    <string name="button_suppression_text">Erase</string>
     <string name="toast_drag_and_drop_text">Drag and drop not implemented.</string>
 
     <!-- SingleplayerMenuActivity -->

@@ -44,10 +44,8 @@
         private static final int CODE_GAME_SAVED = 3;
         private static final long DELAY_TIME = 1250;
         private static final int LENGTH_BOARD = 10;
-        private static final int xtarget = 50;
-        private static final int ytarget = 50;
         private static final int HORIZONTAL = 0;
-        private static final int VERTICAL = 0;
+        private static final int VERTICAL = 1;
 
 
         public static final String KEY_PLAYER_GRID = "PLAYER_GRID";
@@ -56,7 +54,8 @@
         public static final String IA_EASY = "easy";
         public static final String IA_HARD = "hard";
 
-
+        private int xtarget;
+        private int ytarget;
         private String difficulty;
         private TextView textViewHintTurn;
         private GridLayout gridLayoutPlayer, gridLayoutEnemy;
@@ -65,7 +64,7 @@
         private Grid playerGrid, enemyGrid;
         private IA computer;
         private ArrayList<MediaPlayer> mediaPlayers;
-        private boolean playerTurn, gameOver, gameLoaded;
+        private boolean playerTurn, gameOver, gameLoaded, firstLengthLayout;
 
 
         @Override
@@ -97,6 +96,7 @@
                 enemyGrid = new Grid();
                 enemyGrid.arrangeShipsRandomly();
             }
+            firstLengthLayout = true;
             textViewHintTurn = (TextView) findViewById(R.id.textview_hint_turn);
             gridLayoutPlayer = (GridLayout) findViewById(R.id.gridlayout_player);
             gridLayoutEnemy = (GridLayout) findViewById(R.id.gridlayout_enemy);
@@ -254,6 +254,7 @@
                             params = new GridLayout.LayoutParams();
                             params.width = gridLayout.getWidth() / (Grid.SIZE + 1);
                             params.height = gridLayout.getHeight() / (Grid.SIZE + 1);
+                            if(firstLengthLayout) saveLengthLayout(params.width, params.height);
                             imageViews[i][j].setLayoutParams(params);
                             if (isGridEnemy) {
                                 if (!gameLoaded)
@@ -302,6 +303,13 @@
                     }
                 }
             });
+        }
+
+        private void saveLengthLayout(int width, int height) {
+            System.out.println(width + " | " + height);
+            xtarget = width;
+            ytarget = height;
+            firstLengthLayout = false;
         }
 
         private void onTouchListener(final ImageView[][] imageViews, int i, int j, final Grid grid){
